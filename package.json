@@ -1,0 +1,22 @@
+{
+  "name": "rel-vision",
+  "version": "1.0.0",
+  "description": "Tiny retro fantasy console.",
+  "main": "docs/bundle.js",
+  "scripts": {
+    "watch_lib": "rollup -c -w --bundleConfigAsCjs"
+  },
+  "keywords": [
+    "game-development",
+    "fantasy-console"
+  ],
+  "author": "abagames",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "rollup": "^3.21.5",
+    "tslib": "^2.5.0"
+  }
+}
