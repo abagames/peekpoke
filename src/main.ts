@@ -2,7 +2,6 @@ import * as keyboard from "./keyboard";
 import * as buzzer from "./buzzer";
 
 export let memory: number[];
-export let collision: any[];
 export let canvas: HTMLCanvasElement;
 export let canvasContext: CanvasRenderingContext2D;
 export let audioContext: AudioContext;
@@ -49,50 +48,6 @@ export function peek(address: number): number {
     throw `Invalid address: peek ${address}`;
   }
   return memory[address];
-}
-
-export function pset(x: number, y: number, color: number) {}
-
-export function pget(x: number, y: number): number {
-  return 0;
-}
-
-export function inkey(keyCode: number, stateType: number): boolean {
-  return false;
-}
-
-export function beep(frequency: number, length: number): void {}
-
-export function put(
-  x: number,
-  y: number,
-  pattern: string,
-  collisionIndex?: any
-): any {
-  return {};
-}
-
-export function print(
-  x: number,
-  y: number,
-  text: string,
-  collisionIndex?: any
-): any {
-  return {};
-}
-
-export function play(mml: string): void {}
-
-export function addGameScript() {
-  let gameName = window.location.search.substring(1);
-  gameName = gameName.replace(/[^A-Za-z0-9_-]/g, "");
-  if (gameName.length === 0) {
-    return;
-  }
-  const script = document.createElement("script");
-  const gameScriptFile = `${gameName}/main.js`;
-  script.setAttribute("src", gameScriptFile);
-  document.head.appendChild(script);
 }
 
 window.addEventListener("load", onLoad);

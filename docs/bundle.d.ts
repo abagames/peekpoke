@@ -1,5 +1,4 @@
 declare let memory: number[];
-declare let collision: any[];
 declare let canvas: HTMLCanvasElement;
 declare let canvasContext: CanvasRenderingContext2D;
 declare let audioContext: AudioContext;

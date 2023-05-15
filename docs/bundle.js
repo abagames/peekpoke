@@ -250,7 +250,6 @@
     }
 
     exports.memory = void 0;
-    let collision;
     exports.canvas = void 0;
     exports.canvasContext = void 0;
     exports.audioContext = void 0;
@@ -291,32 +290,6 @@
             throw `Invalid address: peek ${address}`;
         }
         return exports.memory[address];
-    }
-    function pset(x, y, color) { }
-    function pget(x, y) {
-        return 0;
-    }
-    function inkey(keyCode, stateType) {
-        return false;
-    }
-    function beep(frequency, length) { }
-    function put(x, y, pattern, collisionIndex) {
-        return {};
-    }
-    function print(x, y, text, collisionIndex) {
-        return {};
-    }
-    function play(mml) { }
-    function addGameScript() {
-        let gameName = window.location.search.substring(1);
-        gameName = gameName.replace(/[^A-Za-z0-9_-]/g, "");
-        if (gameName.length === 0) {
-            return;
-        }
-        const script = document.createElement("script");
-        const gameScriptFile = `${gameName}/main.js`;
-        script.setAttribute("src", gameScriptFile);
-        document.head.appendChild(script);
     }
     window.addEventListener("load", onLoad);
     function onLoad() {
@@ -496,16 +469,7 @@ image-rendering: pixelated;
     exports.KEY_Z = KEY_Z;
     exports.VIDEO_HEIGHT = VIDEO_HEIGHT;
     exports.VIDEO_WIDTH = VIDEO_WIDTH;
-    exports.addGameScript = addGameScript;
-    exports.beep = beep;
-    exports.collision = collision;
-    exports.inkey = inkey;
     exports.peek = peek;
-    exports.pget = pget;
-    exports.play = play;
     exports.poke = poke;
-    exports.print = print;
-    exports.pset = pset;
-    exports.put = put;
 
 })(window || {});
