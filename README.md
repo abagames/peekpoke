@@ -1,3 +1,3 @@
-# rel-vision
+# peek-poke
 
-Tiny retro fantasy console.
+Tiny minimum retro fantasy console having only two commands: peek and poke.

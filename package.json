@@ -1,7 +1,7 @@
 {
-  "name": "rel-vision",
+  "name": "peek-poke",
   "version": "1.0.0",
-  "description": "Tiny retro fantasy console.",
+  "description": "Tiny minimum retro fantasy console having only two commands: peek and poke.",
   "main": "docs/bundle.js",
   "scripts": {
     "watch_lib": "rollup -c -w --bundleConfigAsCjs"
