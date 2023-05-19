@@ -30,8 +30,8 @@ export const KEY_STATE_IS_PRESSED = 0;
 export const KEY_STATE_IS_JUST_PRESSED = 1;
 export const KEY_STATE_IS_JUST_RELEASED = 2;
 export const KEY_STATE_COUNT = 3;
-export const BUZZER_OFF = 0;
-export const BUZZER_ON = 1;
+export const BUZZER_FREQUENCY_MIN = buzzer.BUZZER_FREQUENCY_MIN;
+export const BUZZER_FREQUENCY_MAX = buzzer.BUZZER_FREQUENCY_MAX;
 
 declare function setup();
 declare function loop();
@@ -145,7 +145,7 @@ function updateVideo() {
 
 function updateBuzzer() {
   if (memory[ADDRESS_BUZZER] > 0) {
-    buzzer.beepOn();
+    buzzer.beepOn(memory[ADDRESS_BUZZER]);
   } else {
     buzzer.beepOff();
   }

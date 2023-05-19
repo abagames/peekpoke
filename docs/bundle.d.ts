@@ -27,8 +27,8 @@ declare const KEY_STATE_IS_PRESSED = 0;
 declare const KEY_STATE_IS_JUST_PRESSED = 1;
 declare const KEY_STATE_IS_JUST_RELEASED = 2;
 declare const KEY_STATE_COUNT = 3;
-declare const BUZZER_OFF = 0;
-declare const BUZZER_ON = 1;
+declare const BUZZER_FREQUENCY_MIN: number;
+declare const BUZZER_FREQUENCY_MAX: number;
 
 declare function setup(): void;
 declare function loop(): void;

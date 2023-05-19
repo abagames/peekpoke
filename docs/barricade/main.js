@@ -62,13 +62,13 @@ function loop() {
     angle = 0;
   }
   if (angle !== pa) {
-    poke(ADDRESS_BUZZER, 1);
+    poke(ADDRESS_BUZZER, 2000);
     buzzerTicks = 7;
   }
   if (ticks % gameSpeed > 0) {
     return;
   }
-  poke(ADDRESS_BUZZER, 1);
+  poke(ADDRESS_BUZZER, 1000);
   poke(ADDRESS_VIDEO + x + y * VIDEO_WIDTH, 7);
   const ao = angleOffsets[angle];
   x += ao.x;

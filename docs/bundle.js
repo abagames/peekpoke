@@ -201,7 +201,9 @@
 
     let audioContext;
     let gain;
-    let buzzerBuffer;
+    let buzzerBuffers;
+    let beepNode;
+    let currentFrequency;
     function init() {
         // @ts-ignore
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -211,42 +213,73 @@
         gain = audioContext.createGain();
         gain.gain.value = 0.05;
         gain.connect(audioContext.destination);
-        buzzerBuffer = new AudioBuffer({
+        buzzerBuffers = {};
+        currentFrequency = 0;
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                beepOff();
+            }
+        });
+    }
+    function beepOn(frequency) {
+        let freq = Math.floor(frequency);
+        if (freq < 40) {
+            freq = 40;
+        }
+        else if (freq > 4000) {
+            freq = 4000;
+        }
+        if (freq === currentFrequency) {
+            return;
+        }
+        if (currentFrequency > 0) {
+            beepNode.stop();
+        }
+        let buffer;
+        if (buzzerBuffers[freq] != null) {
+            buffer = buzzerBuffers[freq];
+        }
+        else {
+            buffer = buzzerBuffers[freq] = createBuzzerBufferData(freq);
+        }
+        beepNode = new AudioBufferSourceNode(audioContext, {
+            buffer,
+            loop: true,
+        });
+        beepNode.start();
+        beepNode.stop(getAudioTime() + 3);
+        beepNode.connect(gain);
+        currentFrequency = freq;
+    }
+    function beepOff() {
+        if (currentFrequency === 0) {
+            return;
+        }
+        beepNode.stop();
+        currentFrequency = 0;
+    }
+    function getAudioTime() {
+        return audioContext.currentTime;
+    }
+    function resumeAudio() {
+        audioContext.resume();
+    }
+    function createBuzzerBufferData(frequency) {
+        const buffer = new AudioBuffer({
             numberOfChannels: 1,
             length: audioContext.sampleRate,
             sampleRate: audioContext.sampleRate,
         });
-        const buzzerBufferData = buzzerBuffer.getChannelData(0);
+        const buzzerBufferData = buffer.getChannelData(0);
         for (let i = 0; i < audioContext.sampleRate; i++) {
             const vl = 0.5 +
                 (Math.floor(i / (audioContext.sampleRate / 5000)) % 2 === 0 ? 0.2 : -0.2);
-            let v = Math.floor(i / (audioContext.sampleRate / 2400)) % 2 === 0 ? vl : -vl;
+            let v = Math.floor(i / (audioContext.sampleRate / frequency)) % 2 === 0
+                ? vl
+                : -vl;
             buzzerBufferData[i] = v;
         }
-    }
-    let isBeepOn = false;
-    let beepNode;
-    function beepOn() {
-        if (isBeepOn) {
-            return;
-        }
-        beepNode = new AudioBufferSourceNode(audioContext, {
-            buffer: buzzerBuffer,
-            loop: true,
-        });
-        beepNode.start();
-        beepNode.connect(gain);
-        isBeepOn = true;
-    }
-    function beepOff() {
-        if (!isBeepOn) {
-            return;
-        }
-        beepNode.stop();
-        isBeepOn = false;
-    }
-    function resumeAudio() {
-        audioContext.resume();
+        return buffer;
     }
 
     exports.memory = void 0;
@@ -376,7 +409,7 @@
     }
     function updateBuzzer() {
         if (exports.memory[ADDRESS_BUZZER] > 0) {
-            beepOn();
+            beepOn(exports.memory[ADDRESS_BUZZER]);
         }
         else {
             beepOff();
