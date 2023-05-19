@@ -122,7 +122,8 @@ function updateVideo() {
     i < ADDRESS_VIDEO + VIDEO_WIDTH * VIDEO_HEIGHT;
     i++
   ) {
-    const m = memory[i];
+    let m = memory[i] | 0;
+    m = ((m % 8) + 8) % 8;
     if (m > 0) {
       canvasContext.fillStyle = colorStyles[m];
       canvasContext.fillRect(x, y, 1, 1);

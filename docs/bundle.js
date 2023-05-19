@@ -389,7 +389,8 @@
         let x = 0;
         let y = 0;
         for (let i = ADDRESS_VIDEO; i < ADDRESS_VIDEO + VIDEO_WIDTH * VIDEO_HEIGHT; i++) {
-            const m = exports.memory[i];
+            let m = exports.memory[i] | 0;
+            m = ((m % 8) + 8) % 8;
             if (m > 0) {
                 exports.canvasContext.fillStyle = colorStyles[m];
                 exports.canvasContext.fillRect(x, y, 1, 1);

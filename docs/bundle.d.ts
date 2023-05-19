@@ -26,7 +26,6 @@ declare const KEY_Z: number;
 declare const KEY_STATE_IS_PRESSED: number;
 declare const KEY_STATE_IS_JUST_PRESSED: number;
 declare const KEY_STATE_IS_JUST_RELEASED: number;
-declare const KEY_STATE_COUNT: number;
 declare const BUZZER_FREQUENCY_MIN: number;
 declare const BUZZER_FREQUENCY_MAX: number;
 
