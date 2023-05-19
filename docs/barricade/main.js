@@ -30,36 +30,28 @@ function loop() {
   ticks++;
   const pa = angle;
   if (
-    memory[
-      ADDRESS_KEY + KEY_UP * KEY_STATE_COUNT + KEY_STATE_IS_JUST_PRESSED
-    ] === 1 &&
-    angle !== 1
+    (memory[ADDRESS_KEY + KEY_RIGHT] & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+    angle !== 2
   ) {
-    angle = 3;
+    angle = 0;
   }
   if (
-    memory[
-      ADDRESS_KEY + KEY_LEFT * KEY_STATE_COUNT + KEY_STATE_IS_JUST_PRESSED
-    ] === 1 &&
-    angle !== 0
-  ) {
-    angle = 2;
-  }
-  if (
-    memory[
-      ADDRESS_KEY + KEY_DOWN * KEY_STATE_COUNT + KEY_STATE_IS_JUST_PRESSED
-    ] === 1 &&
+    (memory[ADDRESS_KEY + KEY_DOWN] & KEY_STATE_IS_JUST_PRESSED) > 0 &&
     angle !== 3
   ) {
     angle = 1;
   }
   if (
-    memory[
-      ADDRESS_KEY + KEY_RIGHT * KEY_STATE_COUNT + KEY_STATE_IS_JUST_PRESSED
-    ] === 1 &&
-    angle !== 2
+    (memory[ADDRESS_KEY + KEY_LEFT] & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+    angle !== 0
   ) {
-    angle = 0;
+    angle = 2;
+  }
+  if (
+    (memory[ADDRESS_KEY + KEY_UP] & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+    angle !== 1
+  ) {
+    angle = 3;
   }
   if (angle !== pa) {
     poke(ADDRESS_BUZZER, 2000);

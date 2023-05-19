@@ -200,6 +200,8 @@
     ];
 
     let audioContext;
+    const BUZZER_FREQUENCY_MIN$1 = 40;
+    const BUZZER_FREQUENCY_MAX$1 = 4000;
     let gain;
     let buzzerBuffers;
     let beepNode;
@@ -223,11 +225,11 @@
     }
     function beepOn(frequency) {
         let freq = Math.floor(frequency);
-        if (freq < 40) {
-            freq = 40;
+        if (freq < BUZZER_FREQUENCY_MIN$1) {
+            freq = BUZZER_FREQUENCY_MIN$1;
         }
-        else if (freq > 4000) {
-            freq = 4000;
+        else if (freq > BUZZER_FREQUENCY_MAX$1) {
+            freq = BUZZER_FREQUENCY_MAX$1;
         }
         if (freq === currentFrequency) {
             return;
@@ -288,8 +290,8 @@
     exports.audioContext = void 0;
     const ADDRESS_VIDEO = 0;
     const ADDRESS_KEY = 3072;
-    const ADDRESS_BUZZER = 3090;
-    const ADDRESS_COUNT = 3091;
+    const ADDRESS_BUZZER = 3078;
+    const ADDRESS_COUNT = 3079;
     const VIDEO_WIDTH = 64;
     const VIDEO_HEIGHT = 48;
     const COLOR_BLACK = 0;
@@ -300,18 +302,17 @@
     const COLOR_CYAN = 5;
     const COLOR_YELLOW = 6;
     const COLOR_WHITE = 7;
-    const KEY_UP = 0;
-    const KEY_LEFT = 1;
-    const KEY_DOWN = 2;
-    const KEY_RIGHT = 3;
+    const KEY_RIGHT = 0;
+    const KEY_DOWN = 1;
+    const KEY_LEFT = 2;
+    const KEY_UP = 3;
     const KEY_X = 4;
     const KEY_Z = 5;
-    const KEY_STATE_IS_PRESSED = 0;
-    const KEY_STATE_IS_JUST_PRESSED = 1;
-    const KEY_STATE_IS_JUST_RELEASED = 2;
-    const KEY_STATE_COUNT = 3;
-    const BUZZER_OFF = 0;
-    const BUZZER_ON = 1;
+    const KEY_STATE_IS_PRESSED = 1;
+    const KEY_STATE_IS_JUST_PRESSED = 2;
+    const KEY_STATE_IS_JUST_RELEASED = 4;
+    const BUZZER_FREQUENCY_MIN = BUZZER_FREQUENCY_MIN$1;
+    const BUZZER_FREQUENCY_MAX = BUZZER_FREQUENCY_MAX$1;
     function poke(address, value) {
         if (address < 0 || address >= ADDRESS_COUNT) {
             throw `Invalid address: poke ${address}`;
@@ -358,35 +359,28 @@
         updateBuzzer();
     }
     const keyCodes = [
-        ["ArrowUp", "KeyW"],
-        ["ArrowLeft", "KeyA"],
-        ["ArrowDown", "KeyS"],
         ["ArrowRight", "KeyD"],
+        ["ArrowDown", "KeyS"],
+        ["ArrowLeft", "KeyA"],
+        ["ArrowUp", "KeyW"],
         ["KeyX", "Slash", "Space"],
         ["KeyZ", "Period"],
     ];
     function updateKeyboardMemory() {
         for (let i = 0; i < 6; i++) {
-            let isPressed = 0;
-            let isJustPressed = 0;
-            let isJustReleased = 0;
+            let k = 0;
             keyCodes[i].forEach((c) => {
                 if (code[c].isPressed) {
-                    isPressed = 1;
+                    k |= KEY_STATE_IS_PRESSED;
                 }
                 if (code[c].isJustPressed) {
-                    isJustPressed = 1;
+                    k |= KEY_STATE_IS_JUST_PRESSED;
                 }
                 if (code[c].isJustReleased) {
-                    isJustReleased = 1;
+                    k |= KEY_STATE_IS_JUST_RELEASED;
                 }
-                exports.memory[ADDRESS_KEY + i * KEY_STATE_COUNT + KEY_STATE_IS_PRESSED] =
-                    isPressed;
-                exports.memory[ADDRESS_KEY + i * KEY_STATE_COUNT + KEY_STATE_IS_JUST_PRESSED] =
-                    isJustPressed;
-                exports.memory[ADDRESS_KEY + i * KEY_STATE_COUNT + KEY_STATE_IS_JUST_RELEASED] =
-                    isJustReleased;
             });
+            exports.memory[ADDRESS_KEY + i] = k;
         }
     }
     function updateVideo() {
@@ -480,8 +474,8 @@ image-rendering: pixelated;
     exports.ADDRESS_COUNT = ADDRESS_COUNT;
     exports.ADDRESS_KEY = ADDRESS_KEY;
     exports.ADDRESS_VIDEO = ADDRESS_VIDEO;
-    exports.BUZZER_OFF = BUZZER_OFF;
-    exports.BUZZER_ON = BUZZER_ON;
+    exports.BUZZER_FREQUENCY_MAX = BUZZER_FREQUENCY_MAX;
+    exports.BUZZER_FREQUENCY_MIN = BUZZER_FREQUENCY_MIN;
     exports.COLOR_BLACK = COLOR_BLACK;
     exports.COLOR_BLUE = COLOR_BLUE;
     exports.COLOR_CYAN = COLOR_CYAN;
@@ -493,7 +487,6 @@ image-rendering: pixelated;
     exports.KEY_DOWN = KEY_DOWN;
     exports.KEY_LEFT = KEY_LEFT;
     exports.KEY_RIGHT = KEY_RIGHT;
-    exports.KEY_STATE_COUNT = KEY_STATE_COUNT;
     exports.KEY_STATE_IS_JUST_PRESSED = KEY_STATE_IS_JUST_PRESSED;
     exports.KEY_STATE_IS_JUST_RELEASED = KEY_STATE_IS_JUST_RELEASED;
     exports.KEY_STATE_IS_PRESSED = KEY_STATE_IS_PRESSED;

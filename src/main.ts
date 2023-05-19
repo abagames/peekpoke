@@ -8,8 +8,8 @@ export let audioContext: AudioContext;
 
 export const ADDRESS_VIDEO = 0;
 export const ADDRESS_KEY = 3072;
-export const ADDRESS_BUZZER = 3090;
-export const ADDRESS_COUNT = 3091;
+export const ADDRESS_BUZZER = 3078;
+export const ADDRESS_COUNT = 3079;
 export const VIDEO_WIDTH = 64;
 export const VIDEO_HEIGHT = 48;
 export const COLOR_BLACK = 0;
@@ -20,16 +20,15 @@ export const COLOR_GREEN = 4;
 export const COLOR_CYAN = 5;
 export const COLOR_YELLOW = 6;
 export const COLOR_WHITE = 7;
-export const KEY_UP = 0;
-export const KEY_LEFT = 1;
-export const KEY_DOWN = 2;
-export const KEY_RIGHT = 3;
+export const KEY_RIGHT = 0;
+export const KEY_DOWN = 1;
+export const KEY_LEFT = 2;
+export const KEY_UP = 3;
 export const KEY_X = 4;
 export const KEY_Z = 5;
-export const KEY_STATE_IS_PRESSED = 0;
-export const KEY_STATE_IS_JUST_PRESSED = 1;
-export const KEY_STATE_IS_JUST_RELEASED = 2;
-export const KEY_STATE_COUNT = 3;
+export const KEY_STATE_IS_PRESSED = 1;
+export const KEY_STATE_IS_JUST_PRESSED = 2;
+export const KEY_STATE_IS_JUST_RELEASED = 4;
 export const BUZZER_FREQUENCY_MIN = buzzer.BUZZER_FREQUENCY_MIN;
 export const BUZZER_FREQUENCY_MAX = buzzer.BUZZER_FREQUENCY_MAX;
 
@@ -88,35 +87,28 @@ function updateFrame() {
 }
 
 const keyCodes = [
-  ["ArrowUp", "KeyW"],
-  ["ArrowLeft", "KeyA"],
-  ["ArrowDown", "KeyS"],
   ["ArrowRight", "KeyD"],
+  ["ArrowDown", "KeyS"],
+  ["ArrowLeft", "KeyA"],
+  ["ArrowUp", "KeyW"],
   ["KeyX", "Slash", "Space"],
   ["KeyZ", "Period"],
 ];
 function updateKeyboardMemory() {
   for (let i = 0; i < 6; i++) {
-    let isPressed = 0;
-    let isJustPressed = 0;
-    let isJustReleased = 0;
+    let k = 0;
     keyCodes[i].forEach((c) => {
       if (keyboard.code[c].isPressed) {
-        isPressed = 1;
+        k |= KEY_STATE_IS_PRESSED;
       }
       if (keyboard.code[c].isJustPressed) {
-        isJustPressed = 1;
+        k |= KEY_STATE_IS_JUST_PRESSED;
       }
       if (keyboard.code[c].isJustReleased) {
-        isJustReleased = 1;
+        k |= KEY_STATE_IS_JUST_RELEASED;
       }
-      memory[ADDRESS_KEY + i * KEY_STATE_COUNT + KEY_STATE_IS_PRESSED] =
-        isPressed;
-      memory[ADDRESS_KEY + i * KEY_STATE_COUNT + KEY_STATE_IS_JUST_PRESSED] =
-        isJustPressed;
-      memory[ADDRESS_KEY + i * KEY_STATE_COUNT + KEY_STATE_IS_JUST_RELEASED] =
-        isJustReleased;
     });
+    memory[ADDRESS_KEY + i] = k;
   }
 }
 
