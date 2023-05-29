@@ -1,4 +1,5 @@
 import * as keyboard from "./keyboard";
+import * as virtualPad from "./virtualPad";
 import * as buzzer from "./buzzer";
 
 export let memory: number[];
@@ -6,12 +7,10 @@ export let canvas: HTMLCanvasElement;
 export let canvasContext: CanvasRenderingContext2D;
 export let audioContext: AudioContext;
 
-export const ADDRESS_VIDEO = 0;
-export const ADDRESS_KEY = 3072;
-export const ADDRESS_BUZZER = 3078;
-export const ADDRESS_COUNT = 3079;
-export const VIDEO_WIDTH = 64;
-export const VIDEO_HEIGHT = 48;
+export const VIDEO_WIDTH = 32;
+export const VIDEO_HEIGHT = 32;
+export const TEXT_WIDTH = 8;
+export const TEXT_HEIGHT = 5;
 export const COLOR_BLACK = 0;
 export const COLOR_BLUE = 1;
 export const COLOR_RED = 2;
@@ -20,17 +19,39 @@ export const COLOR_GREEN = 4;
 export const COLOR_CYAN = 5;
 export const COLOR_YELLOW = 6;
 export const COLOR_WHITE = 7;
+export const COLOR_TRANSPARENT = 8;
 export const KEY_RIGHT = 0;
 export const KEY_DOWN = 1;
 export const KEY_LEFT = 2;
 export const KEY_UP = 3;
 export const KEY_X = 4;
 export const KEY_Z = 5;
+export const KEY_COUNT = 6;
 export const KEY_STATE_IS_PRESSED = 1;
 export const KEY_STATE_IS_JUST_PRESSED = 2;
 export const KEY_STATE_IS_JUST_RELEASED = 4;
 export const BUZZER_FREQUENCY_MIN = buzzer.BUZZER_FREQUENCY_MIN;
 export const BUZZER_FREQUENCY_MAX = buzzer.BUZZER_FREQUENCY_MAX;
+export const BUZZER_COUNT = 1;
+export const ADDRESS_VIDEO = 0;
+export const ADDRESS_TEXT = VIDEO_WIDTH * VIDEO_HEIGHT;
+export const ADDRESS_TEXT_COLOR = ADDRESS_TEXT + TEXT_WIDTH * TEXT_HEIGHT;
+export const ADDRESS_TEXT_BACKGROUND =
+  ADDRESS_TEXT_COLOR + TEXT_WIDTH * TEXT_HEIGHT;
+export const ADDRESS_KEY = ADDRESS_TEXT_BACKGROUND + TEXT_WIDTH * TEXT_HEIGHT;
+export const ADDRESS_BUZZER = ADDRESS_KEY + KEY_COUNT;
+export const ADDRESS_COUNT = ADDRESS_BUZZER + BUZZER_COUNT;
+
+const canvasWidth = 48;
+const canvasHeight = 80;
+const videoX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
+const videoY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
+const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
+const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 6);
+const buttonWidth = Math.floor(canvasWidth * 0.15);
+const buttonPressedWidth = Math.floor(canvasWidth * 0.3);
+const arrowButtonX = Math.floor(canvasWidth * 0.3);
+const arrowButtonY = Math.floor(canvasHeight * 0.7);
 
 declare function setup();
 declare function loop();
@@ -80,7 +101,9 @@ function updateFrame() {
     nextFrameTime = now + deltaTime;
   }
   keyboard.update();
+  virtualPad.update();
   updateKeyboardMemory();
+  drawButtons();
   loop();
   updateVideo();
   updateBuzzer();
@@ -108,13 +131,23 @@ function updateKeyboardMemory() {
         k |= KEY_STATE_IS_JUST_RELEASED;
       }
     });
+    if (virtualPad.buttons[i].isPressed) {
+      k |= KEY_STATE_IS_PRESSED;
+    }
+    if (virtualPad.buttons[i].isJustPressed) {
+      k |= KEY_STATE_IS_JUST_PRESSED;
+    }
+    if (virtualPad.buttons[i].isJustReleased) {
+      k |= KEY_STATE_IS_JUST_RELEASED;
+    }
     memory[ADDRESS_KEY + i] = k;
+    virtualPad.buttons[i].isShowingPressed = (k & KEY_STATE_IS_PRESSED) > 0;
   }
 }
 
 function updateVideo() {
   canvasContext.fillStyle = colorStyles[COLOR_BLACK];
-  canvasContext.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+  canvasContext.fillRect(videoX, videoY, VIDEO_WIDTH, VIDEO_HEIGHT);
   let x = 0;
   let y = 0;
   for (
@@ -126,7 +159,7 @@ function updateVideo() {
     m = ((m % 8) + 8) % 8;
     if (m > 0) {
       canvasContext.fillStyle = colorStyles[m];
-      canvasContext.fillRect(x, y, 1, 1);
+      canvasContext.fillRect(x + videoX, y + videoY, 1, 1);
     }
     x++;
     if (x >= VIDEO_WIDTH) {
@@ -161,6 +194,7 @@ position: absolute;
 left: 50%;
 top: 50%;
 transform: translate(-50%, -50%);
+background: ${colorStyles[COLOR_YELLOW]};
 `;
   const crispCss = `
 image-rendering: -moz-crisp-edges;
@@ -170,16 +204,24 @@ image-rendering: pixelated;
 `;
   document.body.style.cssText = bodyCss;
   canvas = document.createElement("canvas");
-  canvas.width = VIDEO_WIDTH;
-  canvas.height = VIDEO_HEIGHT;
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
   canvasContext = canvas.getContext("2d");
   canvasContext.imageSmoothingEnabled = false;
   canvas.style.cssText = canvasCss + crispCss;
+  canvasContext.fillStyle = colorStyles[COLOR_WHITE];
+  canvasContext.fillRect(
+    videoX - videoBezelX,
+    videoY - videoBezelY,
+    VIDEO_WIDTH + videoBezelX * 2,
+    VIDEO_HEIGHT + videoBezelY * 2
+  );
+  initButtons();
   document.body.appendChild(canvas);
   const setSize = () => {
     const cs = 0.95;
     const wr = innerWidth / innerHeight;
-    const cr = VIDEO_WIDTH / VIDEO_HEIGHT;
+    const cr = canvasWidth / canvasHeight;
     const flgWh = wr < cr;
     const cw = flgWh ? cs * innerWidth : cs * innerHeight * cr;
     const ch = !flgWh ? cs * innerHeight : (cs * innerWidth) / cr;
@@ -188,6 +230,55 @@ image-rendering: pixelated;
   };
   window.addEventListener("resize", setSize);
   setSize();
+}
+
+function initButtons() {
+  const buttonXys = [
+    {
+      x: arrowButtonX + Math.floor(buttonWidth * 1.2),
+      y: arrowButtonY,
+    },
+    {
+      x: arrowButtonX,
+      y: arrowButtonY + Math.floor(buttonWidth * 1.2),
+    },
+    {
+      x: arrowButtonX - Math.floor(buttonWidth * 1.2),
+      y: arrowButtonY,
+    },
+    {
+      x: arrowButtonX,
+      y: arrowButtonY - Math.floor(buttonWidth * 1.2),
+    },
+    {
+      x: Math.floor(canvasWidth * 0.9),
+      y: Math.floor(canvasHeight * 0.75),
+    },
+    {
+      x: Math.floor(canvasWidth * 0.7),
+      y: Math.floor(canvasHeight * 0.85),
+    },
+  ];
+  virtualPad.init(
+    canvas,
+    { x: canvasWidth, y: canvasHeight },
+    buttonXys,
+    buttonPressedWidth
+  );
+  drawButtons();
+}
+
+function drawButtons() {
+  virtualPad.buttons.forEach((b) => {
+    canvasContext.fillStyle =
+      colorStyles[b.isShowingPressed ? COLOR_BLUE : COLOR_BLACK];
+    canvasContext.fillRect(
+      Math.floor(b.x - buttonWidth / 2),
+      Math.floor(b.y - buttonWidth / 2),
+      buttonWidth,
+      buttonWidth
+    );
+  });
 }
 
 let colorStyles: string[];

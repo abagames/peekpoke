@@ -58,9 +58,9 @@ export function init(_options?: Options) {
 
 export function update() {
   entries(code).forEach(([c, s]) => {
-    s.isJustPressed = !s.isPressed && pressedCode[c];
-    s.isJustReleased = s.isPressed && releasedCode[c];
-    s.isPressed = !!pressingCode[c];
+    s.isJustPressed = pressedCode[c];
+    s.isJustReleased = releasedCode[c];
+    s.isPressed = pressingCode[c];
   });
   pressedCode = {};
   releasedCode = {};
