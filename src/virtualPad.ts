@@ -2,6 +2,7 @@ export type VirtualButton = {
   x: number;
   y: number;
   size: number;
+  touchSize: number;
   isPressed: boolean;
   isJustPressed: boolean;
   isJustReleased: boolean;
@@ -21,13 +22,13 @@ let pixelSize: { x: number; y: number };
 export function init(
   _screen: HTMLElement,
   _pixelSize: { x: number; y: number },
-  buttonXys: { x: number; y: number }[],
-  buttonSize: number
+  buttonPositions: { x: number; y: number; size: number }[]
 ) {
-  buttons = buttonXys.map((b) => ({
+  buttons = buttonPositions.map((b) => ({
     x: b.x,
     y: b.y,
-    size: buttonSize,
+    size: b.size,
+    touchSize: b.size * 2,
     isPressed: false,
     isJustPressed: false,
     isJustReleased: false,
@@ -117,6 +118,9 @@ function onMove(x: number, y: number, id) {
 }
 
 function onUp(id) {
+  if (!positions.hasOwnProperty(id) || !positions[id].isPressed) {
+    return;
+  }
   const p = positions[id];
   for (let i = 0; i < buttons.length; i++) {
     if (p.pressingButtonIds[i]) {
@@ -137,8 +141,8 @@ function updateButtonState(
   const pp = calcPointerPos(x, y);
   buttons.forEach((b, i) => {
     if (
-      Math.abs(pp.x - b.x + 0.5) < b.size / 2 &&
-      Math.abs(pp.y - b.y + 0.5) < b.size / 2
+      Math.abs(pp.x - b.x + 0.5) < b.touchSize / 2 &&
+      Math.abs(pp.y - b.y + 0.5) < b.touchSize / 2
     ) {
       if (type === "down" || (type === "move" && !pressingButtonIds[i])) {
         pressingButtons[i] = pressedButtons[i] = true;
