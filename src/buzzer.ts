@@ -1,6 +1,4 @@
-export let audioContext: AudioContext;
-export const BUZZER_FREQUENCY_MIN = 40;
-export const BUZZER_FREQUENCY_MAX = 4000;
+let audioContext: AudioContext;
 let gain: GainNode;
 let buzzerBuffers: { [key: number]: AudioBuffer };
 let beepNode: AudioBufferSourceNode;
@@ -25,24 +23,17 @@ export function init() {
 }
 
 export function beepOn(frequency: number) {
-  let freq = Math.floor(frequency);
-  if (freq < BUZZER_FREQUENCY_MIN) {
-    freq = BUZZER_FREQUENCY_MIN;
-  } else if (freq > BUZZER_FREQUENCY_MAX) {
-    freq = BUZZER_FREQUENCY_MAX;
-  }
-  if (freq === currentFrequency) {
+  if (frequency === currentFrequency) {
     return;
   }
   if (currentFrequency > 0) {
     beepNode.stop();
   }
   let buffer: AudioBuffer;
-  if (buzzerBuffers[freq] != null) {
-    buffer = buzzerBuffers[freq];
-  } else {
-    buffer = buzzerBuffers[freq] = createBuzzerBufferData(freq);
+  if (buzzerBuffers[frequency] == null) {
+    buzzerBuffers[frequency] = createBuzzerBufferData(frequency);
   }
+  buffer = buzzerBuffers[frequency];
   beepNode = new AudioBufferSourceNode(audioContext, {
     buffer,
     loop: true,
@@ -50,7 +41,7 @@ export function beepOn(frequency: number) {
   beepNode.start();
   beepNode.stop(getAudioTime() + 3);
   beepNode.connect(gain);
-  currentFrequency = freq;
+  currentFrequency = frequency;
 }
 
 export function beepOff() {
