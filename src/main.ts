@@ -1,16 +1,13 @@
 import * as keyboard from "./keyboard";
 import * as virtualPad from "./virtualPad";
 import * as buzzer from "./buzzer";
+import * as screen from "./screen";
+import * as text from "./text";
 
-export let memory: number[];
-export let canvas: HTMLCanvasElement;
-export let canvasContext: CanvasRenderingContext2D;
-export let audioContext: AudioContext;
-
-export const VIDEO_WIDTH = 32;
-export const VIDEO_HEIGHT = 32;
-export const TEXT_WIDTH = 8;
-export const TEXT_HEIGHT = 5;
+export const VIDEO_WIDTH = screen.size.x;
+export const VIDEO_HEIGHT = screen.size.y;
+export const TEXT_WIDTH = text.size.x;
+export const TEXT_HEIGHT = text.size.y;
 export const COLOR_BLACK = 0;
 export const COLOR_BLUE = 1;
 export const COLOR_RED = 2;
@@ -19,7 +16,7 @@ export const COLOR_GREEN = 4;
 export const COLOR_CYAN = 5;
 export const COLOR_YELLOW = 6;
 export const COLOR_WHITE = 7;
-export const COLOR_TRANSPARENT = 8;
+export const COLOR_COUNT = 8;
 export const KEY_RIGHT = 0;
 export const KEY_DOWN = 1;
 export const KEY_LEFT = 2;
@@ -30,8 +27,6 @@ export const KEY_COUNT = 6;
 export const KEY_STATE_IS_PRESSED = 1;
 export const KEY_STATE_IS_JUST_PRESSED = 2;
 export const KEY_STATE_IS_JUST_RELEASED = 4;
-export const BUZZER_FREQUENCY_MIN = buzzer.BUZZER_FREQUENCY_MIN;
-export const BUZZER_FREQUENCY_MAX = buzzer.BUZZER_FREQUENCY_MAX;
 export const BUZZER_COUNT = 1;
 export const ADDRESS_VIDEO = 0;
 export const ADDRESS_TEXT = VIDEO_WIDTH * VIDEO_HEIGHT;
@@ -42,26 +37,8 @@ export const ADDRESS_KEY = ADDRESS_TEXT_BACKGROUND + TEXT_WIDTH * TEXT_HEIGHT;
 export const ADDRESS_BUZZER = ADDRESS_KEY + KEY_COUNT;
 export const ADDRESS_COUNT = ADDRESS_BUZZER + BUZZER_COUNT;
 
-const canvasWidth = 48;
-const canvasHeight = 80;
-const videoX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
-const videoY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
-const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
-const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 6);
-const buttonWidth = Math.floor(canvasWidth * 0.15);
-const buttonPressedWidth = Math.floor(canvasWidth * 0.3);
-const arrowButtonX = Math.floor(canvasWidth * 0.3);
-const arrowButtonY = Math.floor(canvasHeight * 0.7);
-
 declare function setup();
 declare function loop();
-
-export function poke(address: number, value: number): void {
-  if (address < 0 || address >= ADDRESS_COUNT) {
-    throw `Invalid address: poke ${address}`;
-  }
-  memory[address] = value;
-}
 
 export function peek(address: number): number {
   if (address < 0 || address >= ADDRESS_COUNT) {
@@ -70,18 +47,33 @@ export function peek(address: number): number {
   return memory[address];
 }
 
+export function poke(address: number, value: number): void {
+  if (address < 0 || address >= ADDRESS_COUNT) {
+    throw `Invalid address: poke ${address}`;
+  }
+  memory[address] = value & 0xff;
+}
+
 window.addEventListener("load", onLoad);
 
+const memory: number[] = [];
+
 function onLoad() {
-  memory = [];
   for (let i = 0; i < ADDRESS_COUNT; i++) {
     memory.push(0);
   }
+  for (
+    let i = ADDRESS_TEXT_COLOR;
+    i < ADDRESS_TEXT_COLOR + TEXT_WIDTH * TEXT_HEIGHT;
+    i++
+  ) {
+    memory[i] = COLOR_WHITE;
+  }
   keyboard.init();
   buzzer.init();
-  audioContext = buzzer.audioContext;
   initColors();
   initCanvas();
+  text.init(COLOR_WHITE);
   setup();
   requestAnimationFrame(updateFrame);
 }
@@ -106,6 +98,9 @@ function updateFrame() {
   drawButtons();
   loop();
   updateVideo();
+  updateText();
+  text.update();
+  screen.draw();
   updateBuzzer();
 }
 
@@ -121,13 +116,13 @@ function updateKeyboardMemory() {
   for (let i = 0; i < 6; i++) {
     let k = 0;
     keyCodes[i].forEach((c) => {
-      if (keyboard.code[c].isPressed) {
+      if (keyboard.codeState[c].isPressed) {
         k |= KEY_STATE_IS_PRESSED;
       }
-      if (keyboard.code[c].isJustPressed) {
+      if (keyboard.codeState[c].isJustPressed) {
         k |= KEY_STATE_IS_JUST_PRESSED;
       }
-      if (keyboard.code[c].isJustReleased) {
+      if (keyboard.codeState[c].isJustReleased) {
         k |= KEY_STATE_IS_JUST_RELEASED;
       }
     });
@@ -146,8 +141,6 @@ function updateKeyboardMemory() {
 }
 
 function updateVideo() {
-  canvasContext.fillStyle = colorStyles[COLOR_BLACK];
-  canvasContext.fillRect(videoX, videoY, VIDEO_WIDTH, VIDEO_HEIGHT);
   let x = 0;
   let y = 0;
   for (
@@ -155,12 +148,7 @@ function updateVideo() {
     i < ADDRESS_VIDEO + VIDEO_WIDTH * VIDEO_HEIGHT;
     i++
   ) {
-    let m = memory[i] | 0;
-    m = ((m % 8) + 8) % 8;
-    if (m > 0) {
-      canvasContext.fillStyle = colorStyles[m];
-      canvasContext.fillRect(x + videoX, y + videoY, 1, 1);
-    }
+    screen.pixels[x][y] = memory[i] % COLOR_COUNT;
     x++;
     if (x >= VIDEO_WIDTH) {
       x = 0;
@@ -169,13 +157,34 @@ function updateVideo() {
   }
 }
 
+function updateText() {
+  let x = 0;
+  let y = 0;
+  for (let i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++) {
+    const tg = text.grid[x][y];
+    tg.code = memory[ADDRESS_TEXT + i];
+    tg.color = memory[ADDRESS_TEXT_COLOR + i] % COLOR_COUNT;
+    tg.background = memory[ADDRESS_TEXT_BACKGROUND + i] % COLOR_COUNT;
+    x++;
+    if (x >= TEXT_WIDTH) {
+      x = 0;
+      y++;
+    }
+  }
+}
+
 function updateBuzzer() {
   if (memory[ADDRESS_BUZZER] > 0) {
-    buzzer.beepOn(memory[ADDRESS_BUZZER]);
+    buzzer.beepOn(memory[ADDRESS_BUZZER] * 10);
   } else {
     buzzer.beepOff();
   }
 }
+
+const canvasWidth = 48;
+const canvasHeight = 80;
+let canvas: HTMLCanvasElement;
+let canvasContext: CanvasRenderingContext2D;
 
 function initCanvas() {
   const _bodyBackground = "#111";
@@ -194,7 +203,7 @@ position: absolute;
 left: 50%;
 top: 50%;
 transform: translate(-50%, -50%);
-background: ${colorStyles[COLOR_YELLOW]};
+background: ${colorStyles[COLOR_CYAN]};
 `;
   const crispCss = `
 image-rendering: -moz-crisp-edges;
@@ -209,15 +218,26 @@ image-rendering: pixelated;
   canvasContext = canvas.getContext("2d");
   canvasContext.imageSmoothingEnabled = false;
   canvas.style.cssText = canvasCss + crispCss;
-  canvasContext.fillStyle = colorStyles[COLOR_WHITE];
+  const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
+  const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
+  const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
+  const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 5);
+  canvasContext.fillStyle = colorStyles[COLOR_YELLOW];
   canvasContext.fillRect(
-    videoX - videoBezelX,
-    videoY - videoBezelY,
+    screenCanvasX - videoBezelX,
+    screenCanvasY - videoBezelY,
     VIDEO_WIDTH + videoBezelX * 2,
     VIDEO_HEIGHT + videoBezelY * 2
   );
+  canvasContext.fillStyle = colorStyles[COLOR_BLACK];
+  canvasContext.fillRect(
+    screenCanvasX,
+    screenCanvasY,
+    VIDEO_WIDTH,
+    VIDEO_HEIGHT
+  );
+  screen.init(canvasContext, colorStyles, screenCanvasX, screenCanvasY);
   initButtons();
-  document.body.appendChild(canvas);
   const setSize = () => {
     const cs = 0.95;
     const wr = innerWidth / innerHeight;
@@ -230,41 +250,46 @@ image-rendering: pixelated;
   };
   window.addEventListener("resize", setSize);
   setSize();
+  document.body.appendChild(canvas);
 }
 
 function initButtons() {
-  const buttonXys = [
+  const size = Math.floor(canvasWidth * 0.15);
+  const arrowButtonX = Math.floor(canvasWidth * 0.3);
+  const arrowButtonY = Math.floor(canvasHeight * 0.7);
+  const buttonPositions = [
     {
-      x: arrowButtonX + Math.floor(buttonWidth * 1.2),
+      x: arrowButtonX + Math.floor(size * 1.2),
       y: arrowButtonY,
+      size,
     },
     {
       x: arrowButtonX,
-      y: arrowButtonY + Math.floor(buttonWidth * 1.2),
+      y: arrowButtonY + Math.floor(size * 1.2),
+      size,
     },
     {
-      x: arrowButtonX - Math.floor(buttonWidth * 1.2),
+      x: arrowButtonX - Math.floor(size * 1.2),
       y: arrowButtonY,
+      size,
     },
     {
       x: arrowButtonX,
-      y: arrowButtonY - Math.floor(buttonWidth * 1.2),
+      y: arrowButtonY - Math.floor(size * 1.2),
+      size,
     },
     {
       x: Math.floor(canvasWidth * 0.9),
       y: Math.floor(canvasHeight * 0.75),
+      size,
     },
     {
       x: Math.floor(canvasWidth * 0.7),
       y: Math.floor(canvasHeight * 0.85),
+      size,
     },
   ];
-  virtualPad.init(
-    canvas,
-    { x: canvasWidth, y: canvasHeight },
-    buttonXys,
-    buttonPressedWidth
-  );
+  virtualPad.init(canvas, { x: canvasWidth, y: canvasHeight }, buttonPositions);
   drawButtons();
 }
 
@@ -272,12 +297,14 @@ function drawButtons() {
   virtualPad.buttons.forEach((b) => {
     canvasContext.fillStyle =
       colorStyles[b.isShowingPressed ? COLOR_BLUE : COLOR_BLACK];
-    canvasContext.fillRect(
-      Math.floor(b.x - buttonWidth / 2),
-      Math.floor(b.y - buttonWidth / 2),
-      buttonWidth,
-      buttonWidth
-    );
+    const x = Math.floor(b.x - b.size / 2);
+    const y = Math.floor(b.y - b.size / 2);
+    canvasContext.fillRect(x, y, b.size, b.size);
+    if (!b.isShowingPressed) {
+      canvasContext.fillStyle = colorStyles[COLOR_WHITE];
+      canvasContext.fillRect(x + 1, y + 1, 2, 1);
+      canvasContext.fillRect(x + 1, y + 2, 1, 1);
+    }
   });
 }
 

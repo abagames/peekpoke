@@ -1,17 +1,13 @@
 (function (exports) {
     'use strict';
 
-    let code;
-    const defaultOptions = {
-        onKeyDown: undefined,
-    };
-    let options;
+    let codeState;
     let pressingCode = {};
     let pressedCode = {};
     let releasedCode = {};
-    function init$2(_options) {
-        options = Object.assign(Object.assign({}, defaultOptions), _options);
-        code = fromEntities(codes.map((c) => [
+    let codeStateEntries;
+    function init$4() {
+        codeState = fromEntities(codes.map((c) => [
             c,
             {
                 isPressed: false,
@@ -19,11 +15,9 @@
                 isJustReleased: false,
             },
         ]));
+        codeStateEntries = entries(codeState);
         document.addEventListener("keydown", (e) => {
             pressingCode[e.code] = pressedCode[e.code] = true;
-            if (options.onKeyDown != null) {
-                options.onKeyDown();
-            }
             if (e.code === "AltLeft" ||
                 e.code === "AltRight" ||
                 e.code === "ArrowRight" ||
@@ -38,8 +32,8 @@
             releasedCode[e.code] = true;
         });
     }
-    function update$1() {
-        entries(code).forEach(([c, s]) => {
+    function update$2() {
+        codeStateEntries.forEach(([c, s]) => {
             s.isJustPressed = pressedCode[c];
             s.isJustReleased = releasedCode[c];
             s.isPressed = pressingCode[c];
@@ -57,146 +51,19 @@
         return Object.keys(obj).map((p) => [p, obj[p]]);
     }
     const codes = [
-        "Escape",
-        "Digit0",
-        "Digit1",
-        "Digit2",
-        "Digit3",
-        "Digit4",
-        "Digit5",
-        "Digit6",
-        "Digit7",
-        "Digit8",
-        "Digit9",
-        "Minus",
-        "Equal",
-        "Backspace",
-        "Tab",
-        "KeyQ",
-        "KeyW",
-        "KeyE",
-        "KeyR",
-        "KeyT",
-        "KeyY",
-        "KeyU",
-        "KeyI",
-        "KeyO",
-        "KeyP",
-        "BracketLeft",
-        "BracketRight",
-        "Enter",
-        "ControlLeft",
-        "KeyA",
-        "KeyS",
-        "KeyD",
-        "KeyF",
-        "KeyG",
-        "KeyH",
-        "KeyJ",
-        "KeyK",
-        "KeyL",
-        "Semicolon",
-        "Quote",
-        "Backquote",
-        "ShiftLeft",
-        "Backslash",
-        "KeyZ",
-        "KeyX",
-        "KeyC",
-        "KeyV",
-        "KeyB",
-        "KeyN",
-        "KeyM",
-        "Comma",
-        "Period",
-        "Slash",
-        "ShiftRight",
-        "NumpadMultiply",
-        "AltLeft",
-        "Space",
-        "CapsLock",
-        "F1",
-        "F2",
-        "F3",
-        "F4",
-        "F5",
-        "F6",
-        "F7",
-        "F8",
-        "F9",
-        "F10",
-        "Pause",
-        "ScrollLock",
-        "Numpad7",
-        "Numpad8",
-        "Numpad9",
-        "NumpadSubtract",
-        "Numpad4",
-        "Numpad5",
-        "Numpad6",
-        "NumpadAdd",
-        "Numpad1",
-        "Numpad2",
-        "Numpad3",
-        "Numpad0",
-        "NumpadDecimal",
-        "IntlBackslash",
-        "F11",
-        "F12",
-        "F13",
-        "F14",
-        "F15",
-        "F16",
-        "F17",
-        "F18",
-        "F19",
-        "F20",
-        "F21",
-        "F22",
-        "F23",
-        "F24",
-        "IntlYen",
-        "Undo",
-        "Paste",
-        "MediaTrackPrevious",
-        "Cut",
-        "Copy",
-        "MediaTrackNext",
-        "NumpadEnter",
-        "ControlRight",
-        "LaunchMail",
-        "AudioVolumeMute",
-        "MediaPlayPause",
-        "MediaStop",
-        "Eject",
-        "AudioVolumeDown",
-        "AudioVolumeUp",
-        "BrowserHome",
-        "NumpadDivide",
-        "PrintScreen",
-        "AltRight",
-        "Help",
-        "NumLock",
-        "Pause",
-        "Home",
-        "ArrowUp",
-        "PageUp",
-        "ArrowLeft",
         "ArrowRight",
-        "End",
+        "KeyD",
         "ArrowDown",
-        "PageDown",
-        "Insert",
-        "Delete",
-        "OSLeft",
-        "OSRight",
-        "ContextMenu",
-        "BrowserSearch",
-        "BrowserFavorites",
-        "BrowserRefresh",
-        "BrowserStop",
-        "BrowserForward",
-        "BrowserBack",
+        "KeyS",
+        "ArrowLeft",
+        "KeyA",
+        "ArrowUp",
+        "KeyW",
+        "KeyX",
+        "Slash",
+        "Space",
+        "KeyZ",
+        "Period",
     ];
 
     let buttons;
@@ -206,11 +73,12 @@
     let positions;
     let screen;
     let pixelSize;
-    function init$1(_screen, _pixelSize, buttonXys, buttonSize) {
-        buttons = buttonXys.map((b) => ({
+    function init$3(_screen, _pixelSize, buttonPositions) {
+        buttons = buttonPositions.map((b) => ({
             x: b.x,
             y: b.y,
-            size: buttonSize,
+            size: b.size,
+            touchSize: b.size * 2,
             isPressed: false,
             isJustPressed: false,
             isJustReleased: false,
@@ -260,7 +128,7 @@
             }
         }, { passive: false });
     }
-    function update() {
+    function update$1() {
         buttons.forEach((b, i) => {
             b.isJustPressed = pressedButtons[i];
             b.isJustReleased = releasedButtons[i];
@@ -289,6 +157,9 @@
         updateButtonState(x, y, "move", positions[id].pressingButtonIds);
     }
     function onUp(id) {
+        if (!positions.hasOwnProperty(id) || !positions[id].isPressed) {
+            return;
+        }
         const p = positions[id];
         for (let i = 0; i < buttons.length; i++) {
             if (p.pressingButtonIds[i]) {
@@ -302,8 +173,8 @@
     function updateButtonState(x, y, type, pressingButtonIds) {
         const pp = calcPointerPos(x, y);
         buttons.forEach((b, i) => {
-            if (Math.abs(pp.x - b.x + 0.5) < b.size / 2 &&
-                Math.abs(pp.y - b.y + 0.5) < b.size / 2) {
+            if (Math.abs(pp.x - b.x + 0.5) < b.touchSize / 2 &&
+                Math.abs(pp.y - b.y + 0.5) < b.touchSize / 2) {
                 if (type === "down" || (type === "move" && !pressingButtonIds[i])) {
                     pressingButtons[i] = pressedButtons[i] = true;
                     pressingButtonIds[i] = true;
@@ -327,13 +198,11 @@
     }
 
     let audioContext;
-    const BUZZER_FREQUENCY_MIN$1 = 40;
-    const BUZZER_FREQUENCY_MAX$1 = 4000;
     let gain;
     let buzzerBuffers;
     let beepNode;
     let currentFrequency;
-    function init() {
+    function init$2() {
         // @ts-ignore
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         window.addEventListener("mousedown", resumeAudio);
@@ -351,26 +220,17 @@
         });
     }
     function beepOn(frequency) {
-        let freq = Math.floor(frequency);
-        if (freq < BUZZER_FREQUENCY_MIN$1) {
-            freq = BUZZER_FREQUENCY_MIN$1;
-        }
-        else if (freq > BUZZER_FREQUENCY_MAX$1) {
-            freq = BUZZER_FREQUENCY_MAX$1;
-        }
-        if (freq === currentFrequency) {
+        if (frequency === currentFrequency) {
             return;
         }
         if (currentFrequency > 0) {
             beepNode.stop();
         }
         let buffer;
-        if (buzzerBuffers[freq] != null) {
-            buffer = buzzerBuffers[freq];
+        if (buzzerBuffers[frequency] == null) {
+            buzzerBuffers[frequency] = createBuzzerBufferData(frequency);
         }
-        else {
-            buffer = buzzerBuffers[freq] = createBuzzerBufferData(freq);
-        }
+        buffer = buzzerBuffers[frequency];
         beepNode = new AudioBufferSourceNode(audioContext, {
             buffer,
             loop: true,
@@ -378,7 +238,7 @@
         beepNode.start();
         beepNode.stop(getAudioTime() + 3);
         beepNode.connect(gain);
-        currentFrequency = freq;
+        currentFrequency = frequency;
     }
     function beepOff() {
         if (currentFrequency === 0) {
@@ -411,14 +271,785 @@
         return buffer;
     }
 
-    exports.memory = void 0;
-    exports.canvas = void 0;
-    exports.canvasContext = void 0;
-    exports.audioContext = void 0;
-    const VIDEO_WIDTH = 32;
-    const VIDEO_HEIGHT = 32;
-    const TEXT_WIDTH = 8;
-    const TEXT_HEIGHT = 5;
+    const size$1 = { x: 32, y: 30 };
+    const pixels = [];
+    const textPixels = [];
+    const prevPixels = [];
+    let canvasContext$1;
+    let colorStyles$1;
+    let screenCanvasX;
+    let screenCanvasY;
+    function init$1(_canvasContext, _colorStyles, _screenCanvasX, _screenCanvasY) {
+        canvasContext$1 = _canvasContext;
+        colorStyles$1 = _colorStyles;
+        screenCanvasX = _screenCanvasX;
+        screenCanvasY = _screenCanvasY;
+        for (let x = 0; x < size$1.x; x++) {
+            const l = [];
+            const tl = [];
+            const pl = [];
+            for (let y = 0; y < size$1.y; y++) {
+                l.push(0);
+                tl.push(0);
+                pl.push(0);
+            }
+            pixels.push(l);
+            textPixels.push(tl);
+            prevPixels.push(pl);
+        }
+    }
+    function draw() {
+        for (let x = 0; x < size$1.x; x++) {
+            for (let y = 0; y < size$1.y; y++) {
+                const p = textPixels[x][y] === 0 ? pixels[x][y] : textPixels[x][y];
+                if (prevPixels[x][y] !== p) {
+                    canvasContext$1.fillStyle = colorStyles$1[p];
+                    canvasContext$1.fillRect(x + screenCanvasX, y + screenCanvasY, 1, 1);
+                    prevPixels[x][y] = p;
+                }
+            }
+        }
+    }
+
+    const textPatterns = [
+        // !
+        `
+ l
+ l
+ l
+
+ l
+`,
+        `
+l l
+l l
+
+
+
+`,
+        `
+l l
+lll
+l l
+lll
+l l
+`,
+        `
+ ll
+ll
+lll
+ ll
+ll
+`,
+        `
+l l
+  l
+ l
+l
+l l
+`,
+        `
+ll
+ll
+lll
+l 
+lll
+`,
+        `
+ l
+ l
+
+
+
+`,
+        `
+  l
+ l
+ l
+ l
+  l
+`,
+        `
+l
+ l
+ l
+ l
+l
+`,
+        `
+ l
+lll
+ l
+lll
+ l
+`,
+        `
+ l
+ l
+lll
+ l
+ l
+`,
+        `
+
+
+
+ l
+l
+`,
+        `
+
+
+lll
+
+
+`,
+        `
+
+
+
+
+ l
+`,
+        `
+  l
+ l
+ l
+ l
+l
+`,
+        // 0
+        `
+lll
+l l
+l l
+l l
+lll
+`,
+        `
+  l
+  l
+  l
+  l
+  1
+`,
+        `
+lll
+  l
+lll
+l
+lll
+`,
+        `
+lll
+  l
+lll
+  l
+lll
+`,
+        `
+l l
+l l
+lll
+  l
+  l
+`,
+        `
+lll
+l
+lll
+  l
+lll
+`,
+        `
+l
+l
+lll
+l l
+lll
+`,
+        `
+lll
+  l
+  l
+  l
+  l
+`,
+        `
+lll
+l l
+lll
+l l
+lll
+`,
+        `
+lll
+l l
+lll
+  l
+  l
+`,
+        // :
+        `
+
+ l
+
+ l
+
+`,
+        `
+
+ l
+
+ l
+l
+`,
+        `
+  l
+ l
+l
+ l
+  l
+`,
+        `
+
+lll
+
+lll
+
+`,
+        `
+l
+ l
+  l
+ l
+l
+`,
+        `
+lll
+  l
+ ll
+
+ l
+`,
+        `
+
+lll
+l l
+l
+ ll
+`,
+        // A
+        `
+lll
+l l
+lll
+l l
+l l
+`,
+        `
+ll
+l l
+lll
+l l
+ll
+`,
+        `
+lll
+l
+l
+l
+lll
+`,
+        `
+ll
+l l
+l l
+l l
+ll
+`,
+        `
+lll
+l
+lll
+l
+lll
+`,
+        `
+lll
+l
+lll
+l
+l
+`,
+        `
+lll
+l
+l l
+l l
+ ll
+`,
+        `
+l l
+l l
+lll
+l l
+l l
+`,
+        `
+ l
+ l
+ l
+ l
+ l
+`,
+        `
+  l
+  l
+  l
+  l
+ll
+`,
+        `
+l l
+l l
+ll
+l l
+l l
+`,
+        `
+l
+l
+l
+l
+lll
+`,
+        `
+l l
+lll
+l l
+l l
+l l
+`,
+        `
+l l
+lll
+lll
+lll
+l l
+`,
+        `
+lll
+l l
+l l
+l l
+lll
+`,
+        `
+lll
+l l
+lll
+l
+l
+`,
+        `
+lll
+l l
+l l
+lll
+lll
+`,
+        `
+ll
+l l
+lll
+l l
+l l
+`,
+        `
+lll
+l
+lll
+  l
+lll
+`,
+        `
+lll
+ l
+ l
+ l
+ l
+`,
+        `
+l l
+l l
+l l
+l l
+lll
+`,
+        `
+l l
+l l
+l l
+l l
+ l
+`,
+        `
+l l
+l l
+lll
+lll
+l l
+`,
+        `
+l l
+l l
+ l
+l l
+l l
+`,
+        `
+l l
+l l
+lll
+ l
+ l
+`,
+        `
+lll
+  l
+ l
+l
+lll
+`,
+        `
+ ll
+ l
+ l
+ l
+ ll
+`,
+        `
+l
+ l
+ l
+ l
+  l
+`,
+        `
+ll
+ l
+ l
+ l
+ll
+`,
+        `
+ l
+l l
+
+
+
+`,
+        `
+
+
+
+
+lll
+`,
+        `
+l
+ l
+
+
+
+`,
+        // a
+        `
+
+
+ ll
+l l
+ ll
+`,
+        `
+
+l
+lll
+l l
+lll
+`,
+        `
+
+
+lll
+l
+lll
+`,
+        `
+
+  l
+lll
+l l
+lll
+`,
+        `
+
+
+lll
+l
+ ll
+`,
+        `
+
+ ll
+ l
+lll
+ l
+`,
+        `
+
+lll
+lll
+  l
+ll
+`,
+        `
+
+l
+l
+lll
+l l
+`,
+        `
+
+ l
+
+ l
+ l
+`,
+        `
+
+ l
+
+ l
+ll
+`,
+        `
+
+l
+l l
+ll
+l l
+`,
+        `
+
+ l
+ l
+ l
+ l
+`,
+        `
+
+
+lll
+lll
+l l
+`,
+        `
+
+
+ll
+l l
+l l
+`,
+        `
+
+
+lll
+l l
+lll
+`,
+        `
+
+
+lll
+lll
+l
+`,
+        `
+
+
+lll
+lll
+  l
+`,
+        `
+
+
+lll
+l
+l
+`,
+        `
+
+
+ ll
+lll
+ll
+`,
+        `
+
+
+lll
+ l
+ l
+`,
+        `
+
+
+l l
+l l
+lll
+`,
+        `
+
+
+l l
+l l
+ l
+`,
+        `
+
+
+l l
+lll
+l l
+`,
+        `
+
+
+l l
+ l
+l l
+`,
+        `
+
+
+l l
+ l
+l
+`,
+        `
+
+
+lll
+ l
+lll
+`,
+        //{
+        `
+ ll
+ l
+l
+ l
+ ll
+`,
+        `
+ l
+ l
+ l
+ l
+ l
+`,
+        `
+ll
+ l
+  l
+ l
+ll
+`,
+        `
+
+l
+lll
+  l
+
+`,
+    ];
+
+    const size = { x: 8, y: 5 };
+    const grid = [];
+    const prevGrid = [];
+    const pattern = [];
+    const letterSize = { x: 3, y: 5 };
+    function init(defaultColor) {
+        textPatterns.forEach((tp) => {
+            const p = [];
+            const ls = tp.split("\n");
+            for (let y = 1; y <= letterSize.y; y++) {
+                const l = ls[y];
+                const lp = [];
+                for (let x = 0; x < letterSize.x; x++) {
+                    lp.push(!(x >= l.length) && l.charAt(x) !== " ");
+                }
+                p.push(lp);
+            }
+            pattern.push(p);
+        });
+        for (let x = 0; x < size.x; x++) {
+            const l = [];
+            const pl = [];
+            for (let y = 0; y < size.y; y++) {
+                l.push({ code: 0, color: defaultColor, background: 0 });
+                pl.push({ code: 0, color: defaultColor, background: 0 });
+            }
+            grid.push(l);
+            prevGrid.push(pl);
+        }
+    }
+    function update() {
+        for (let x = 0; x < size.x; x++) {
+            for (let y = 0; y < size.y; y++) {
+                const g = grid[x][y];
+                const pg = prevGrid[x][y];
+                if (pg.code !== g.code ||
+                    pg.color !== g.color ||
+                    pg.background !== g.background) {
+                    drawPattern(x, y, g);
+                    pg.code = g.code;
+                    pg.color = g.color;
+                    pg.background = g.background;
+                }
+            }
+        }
+    }
+    function drawPattern(x, y, c) {
+        const ox = 1 + x * (letterSize.x + 1);
+        const oy = 1 + y * (letterSize.y + 1);
+        if (c.background > 0) {
+            for (let x = -1; x < letterSize.x; x++) {
+                for (let y = -1; y < letterSize.y; y++) {
+                    textPixels[ox + x][oy + y] = c.background;
+                }
+            }
+        }
+        if (c.code >= 33 && c.code <= 126) {
+            const p = pattern[c.code - 33];
+            for (let x = 0; x < letterSize.x; x++) {
+                for (let y = 0; y < letterSize.y; y++) {
+                    if (p[y][x]) {
+                        textPixels[ox + x][oy + y] = c.color;
+                    }
+                }
+            }
+        }
+    }
+
+    const VIDEO_WIDTH = size$1.x;
+    const VIDEO_HEIGHT = size$1.y;
+    const TEXT_WIDTH = size.x;
+    const TEXT_HEIGHT = size.y;
     const COLOR_BLACK = 0;
     const COLOR_BLUE = 1;
     const COLOR_RED = 2;
@@ -427,7 +1058,7 @@
     const COLOR_CYAN = 5;
     const COLOR_YELLOW = 6;
     const COLOR_WHITE = 7;
-    const COLOR_TRANSPARENT = 8;
+    const COLOR_COUNT = 8;
     const KEY_RIGHT = 0;
     const KEY_DOWN = 1;
     const KEY_LEFT = 2;
@@ -438,8 +1069,6 @@
     const KEY_STATE_IS_PRESSED = 1;
     const KEY_STATE_IS_JUST_PRESSED = 2;
     const KEY_STATE_IS_JUST_RELEASED = 4;
-    const BUZZER_FREQUENCY_MIN = BUZZER_FREQUENCY_MIN$1;
-    const BUZZER_FREQUENCY_MAX = BUZZER_FREQUENCY_MAX$1;
     const BUZZER_COUNT = 1;
     const ADDRESS_VIDEO = 0;
     const ADDRESS_TEXT = VIDEO_WIDTH * VIDEO_HEIGHT;
@@ -448,39 +1077,32 @@
     const ADDRESS_KEY = ADDRESS_TEXT_BACKGROUND + TEXT_WIDTH * TEXT_HEIGHT;
     const ADDRESS_BUZZER = ADDRESS_KEY + KEY_COUNT;
     const ADDRESS_COUNT = ADDRESS_BUZZER + BUZZER_COUNT;
-    const canvasWidth = 48;
-    const canvasHeight = 80;
-    const videoX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
-    const videoY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
-    const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
-    const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 6);
-    const buttonWidth = Math.floor(canvasWidth * 0.15);
-    const buttonPressedWidth = Math.floor(canvasWidth * 0.3);
-    const arrowButtonX = Math.floor(canvasWidth * 0.3);
-    const arrowButtonY = Math.floor(canvasHeight * 0.7);
-    function poke(address, value) {
-        if (address < 0 || address >= ADDRESS_COUNT) {
-            throw `Invalid address: poke ${address}`;
-        }
-        exports.memory[address] = value;
-    }
     function peek(address) {
         if (address < 0 || address >= ADDRESS_COUNT) {
             throw `Invalid address: peek ${address}`;
         }
-        return exports.memory[address];
+        return memory[address];
+    }
+    function poke(address, value) {
+        if (address < 0 || address >= ADDRESS_COUNT) {
+            throw `Invalid address: poke ${address}`;
+        }
+        memory[address] = value & 0xff;
     }
     window.addEventListener("load", onLoad);
+    const memory = [];
     function onLoad() {
-        exports.memory = [];
         for (let i = 0; i < ADDRESS_COUNT; i++) {
-            exports.memory.push(0);
+            memory.push(0);
         }
+        for (let i = ADDRESS_TEXT_COLOR; i < ADDRESS_TEXT_COLOR + TEXT_WIDTH * TEXT_HEIGHT; i++) {
+            memory[i] = COLOR_WHITE;
+        }
+        init$4();
         init$2();
-        init();
-        exports.audioContext = audioContext;
         initColors();
         initCanvas();
+        init(COLOR_WHITE);
         setup();
         requestAnimationFrame(updateFrame);
     }
@@ -497,12 +1119,15 @@
         if (nextFrameTime < now || nextFrameTime > now + deltaTime * 2) {
             nextFrameTime = now + deltaTime;
         }
+        update$2();
         update$1();
-        update();
         updateKeyboardMemory();
         drawButtons();
         loop();
         updateVideo();
+        updateText();
+        update();
+        draw();
         updateBuzzer();
     }
     const keyCodes = [
@@ -517,13 +1142,13 @@
         for (let i = 0; i < 6; i++) {
             let k = 0;
             keyCodes[i].forEach((c) => {
-                if (code[c].isPressed) {
+                if (codeState[c].isPressed) {
                     k |= KEY_STATE_IS_PRESSED;
                 }
-                if (code[c].isJustPressed) {
+                if (codeState[c].isJustPressed) {
                     k |= KEY_STATE_IS_JUST_PRESSED;
                 }
-                if (code[c].isJustReleased) {
+                if (codeState[c].isJustReleased) {
                     k |= KEY_STATE_IS_JUST_RELEASED;
                 }
             });
@@ -536,22 +1161,15 @@
             if (buttons[i].isJustReleased) {
                 k |= KEY_STATE_IS_JUST_RELEASED;
             }
-            exports.memory[ADDRESS_KEY + i] = k;
+            memory[ADDRESS_KEY + i] = k;
             buttons[i].isShowingPressed = (k & KEY_STATE_IS_PRESSED) > 0;
         }
     }
     function updateVideo() {
-        exports.canvasContext.fillStyle = colorStyles[COLOR_BLACK];
-        exports.canvasContext.fillRect(videoX, videoY, VIDEO_WIDTH, VIDEO_HEIGHT);
         let x = 0;
         let y = 0;
         for (let i = ADDRESS_VIDEO; i < ADDRESS_VIDEO + VIDEO_WIDTH * VIDEO_HEIGHT; i++) {
-            let m = exports.memory[i] | 0;
-            m = ((m % 8) + 8) % 8;
-            if (m > 0) {
-                exports.canvasContext.fillStyle = colorStyles[m];
-                exports.canvasContext.fillRect(x + videoX, y + videoY, 1, 1);
-            }
+            pixels[x][y] = memory[i] % COLOR_COUNT;
             x++;
             if (x >= VIDEO_WIDTH) {
                 x = 0;
@@ -559,14 +1177,33 @@
             }
         }
     }
+    function updateText() {
+        let x = 0;
+        let y = 0;
+        for (let i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++) {
+            const tg = grid[x][y];
+            tg.code = memory[ADDRESS_TEXT + i];
+            tg.color = memory[ADDRESS_TEXT_COLOR + i] % COLOR_COUNT;
+            tg.background = memory[ADDRESS_TEXT_BACKGROUND + i] % COLOR_COUNT;
+            x++;
+            if (x >= TEXT_WIDTH) {
+                x = 0;
+                y++;
+            }
+        }
+    }
     function updateBuzzer() {
-        if (exports.memory[ADDRESS_BUZZER] > 0) {
-            beepOn(exports.memory[ADDRESS_BUZZER]);
+        if (memory[ADDRESS_BUZZER] > 0) {
+            beepOn(memory[ADDRESS_BUZZER] * 10);
         }
         else {
             beepOff();
         }
     }
+    const canvasWidth = 48;
+    const canvasHeight = 80;
+    let canvas;
+    let canvasContext;
     function initCanvas() {
         const _bodyBackground = "#111";
         const bodyCss = `
@@ -584,7 +1221,7 @@ position: absolute;
 left: 50%;
 top: 50%;
 transform: translate(-50%, -50%);
-background: ${colorStyles[COLOR_YELLOW]};
+background: ${colorStyles[COLOR_CYAN]};
 `;
         const crispCss = `
 image-rendering: -moz-crisp-edges;
@@ -593,16 +1230,22 @@ image-rendering: -o-crisp-edges;
 image-rendering: pixelated;
 `;
         document.body.style.cssText = bodyCss;
-        exports.canvas = document.createElement("canvas");
-        exports.canvas.width = canvasWidth;
-        exports.canvas.height = canvasHeight;
-        exports.canvasContext = exports.canvas.getContext("2d");
-        exports.canvasContext.imageSmoothingEnabled = false;
-        exports.canvas.style.cssText = canvasCss + crispCss;
-        exports.canvasContext.fillStyle = colorStyles[COLOR_WHITE];
-        exports.canvasContext.fillRect(videoX - videoBezelX, videoY - videoBezelY, VIDEO_WIDTH + videoBezelX * 2, VIDEO_HEIGHT + videoBezelY * 2);
+        canvas = document.createElement("canvas");
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        canvasContext = canvas.getContext("2d");
+        canvasContext.imageSmoothingEnabled = false;
+        canvas.style.cssText = canvasCss + crispCss;
+        const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
+        const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
+        const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
+        const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 5);
+        canvasContext.fillStyle = colorStyles[COLOR_YELLOW];
+        canvasContext.fillRect(screenCanvasX - videoBezelX, screenCanvasY - videoBezelY, VIDEO_WIDTH + videoBezelX * 2, VIDEO_HEIGHT + videoBezelY * 2);
+        canvasContext.fillStyle = colorStyles[COLOR_BLACK];
+        canvasContext.fillRect(screenCanvasX, screenCanvasY, VIDEO_WIDTH, VIDEO_HEIGHT);
+        init$1(canvasContext, colorStyles, screenCanvasX, screenCanvasY);
         initButtons();
-        document.body.appendChild(exports.canvas);
         const setSize = () => {
             const cs = 0.95;
             const wr = innerWidth / innerHeight;
@@ -610,47 +1253,64 @@ image-rendering: pixelated;
             const flgWh = wr < cr;
             const cw = flgWh ? cs * innerWidth : cs * innerHeight * cr;
             const ch = !flgWh ? cs * innerHeight : (cs * innerWidth) / cr;
-            exports.canvas.style.width = `${cw}px`;
-            exports.canvas.style.height = `${ch}px`;
+            canvas.style.width = `${cw}px`;
+            canvas.style.height = `${ch}px`;
         };
         window.addEventListener("resize", setSize);
         setSize();
+        document.body.appendChild(canvas);
     }
     function initButtons() {
-        const buttonXys = [
+        const size = Math.floor(canvasWidth * 0.15);
+        const arrowButtonX = Math.floor(canvasWidth * 0.3);
+        const arrowButtonY = Math.floor(canvasHeight * 0.7);
+        const buttonPositions = [
             {
-                x: arrowButtonX + Math.floor(buttonWidth * 1.2),
+                x: arrowButtonX + Math.floor(size * 1.2),
                 y: arrowButtonY,
+                size,
             },
             {
                 x: arrowButtonX,
-                y: arrowButtonY + Math.floor(buttonWidth * 1.2),
+                y: arrowButtonY + Math.floor(size * 1.2),
+                size,
             },
             {
-                x: arrowButtonX - Math.floor(buttonWidth * 1.2),
+                x: arrowButtonX - Math.floor(size * 1.2),
                 y: arrowButtonY,
+                size,
             },
             {
                 x: arrowButtonX,
-                y: arrowButtonY - Math.floor(buttonWidth * 1.2),
+                y: arrowButtonY - Math.floor(size * 1.2),
+                size,
             },
             {
                 x: Math.floor(canvasWidth * 0.9),
                 y: Math.floor(canvasHeight * 0.75),
+                size,
             },
             {
                 x: Math.floor(canvasWidth * 0.7),
                 y: Math.floor(canvasHeight * 0.85),
+                size,
             },
         ];
-        init$1(exports.canvas, { x: canvasWidth, y: canvasHeight }, buttonXys, buttonPressedWidth);
+        init$3(canvas, { x: canvasWidth, y: canvasHeight }, buttonPositions);
         drawButtons();
     }
     function drawButtons() {
         buttons.forEach((b) => {
-            exports.canvasContext.fillStyle =
+            canvasContext.fillStyle =
                 colorStyles[b.isShowingPressed ? COLOR_BLUE : COLOR_BLACK];
-            exports.canvasContext.fillRect(Math.floor(b.x - buttonWidth / 2), Math.floor(b.y - buttonWidth / 2), buttonWidth, buttonWidth);
+            const x = Math.floor(b.x - b.size / 2);
+            const y = Math.floor(b.y - b.size / 2);
+            canvasContext.fillRect(x, y, b.size, b.size);
+            if (!b.isShowingPressed) {
+                canvasContext.fillStyle = colorStyles[COLOR_WHITE];
+                canvasContext.fillRect(x + 1, y + 1, 2, 1);
+                canvasContext.fillRect(x + 1, y + 2, 1, 1);
+            }
         });
     }
     let colorStyles;
@@ -677,15 +1337,13 @@ image-rendering: pixelated;
     exports.ADDRESS_TEXT_COLOR = ADDRESS_TEXT_COLOR;
     exports.ADDRESS_VIDEO = ADDRESS_VIDEO;
     exports.BUZZER_COUNT = BUZZER_COUNT;
-    exports.BUZZER_FREQUENCY_MAX = BUZZER_FREQUENCY_MAX;
-    exports.BUZZER_FREQUENCY_MIN = BUZZER_FREQUENCY_MIN;
     exports.COLOR_BLACK = COLOR_BLACK;
     exports.COLOR_BLUE = COLOR_BLUE;
+    exports.COLOR_COUNT = COLOR_COUNT;
     exports.COLOR_CYAN = COLOR_CYAN;
     exports.COLOR_GREEN = COLOR_GREEN;
     exports.COLOR_PURPLE = COLOR_PURPLE;
     exports.COLOR_RED = COLOR_RED;
-    exports.COLOR_TRANSPARENT = COLOR_TRANSPARENT;
     exports.COLOR_WHITE = COLOR_WHITE;
     exports.COLOR_YELLOW = COLOR_YELLOW;
     exports.KEY_COUNT = KEY_COUNT;
