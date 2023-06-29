@@ -64,6 +64,7 @@
         "Space",
         "KeyZ",
         "Period",
+        "KeyM",
     ];
 
     let buttons;
@@ -311,7 +312,7 @@
         }
     }
 
-    const textPatterns = [
+    const textPatternStrings = [
         // !
         `
  l
@@ -977,14 +978,37 @@ lll
 
 `,
     ];
+    const iconPatternStrings = [
+        `
+  l
+l l
+l l
+  l
+
+`,
+    ];
 
     const size = { x: 8, y: 5 };
-    const grid = [];
-    const prevGrid = [];
-    const pattern = [];
     const letterSize = { x: 3, y: 5 };
+    const grid = [];
+    let pattern;
+    const prevGrid = [];
     function init(defaultColor) {
-        textPatterns.forEach((tp) => {
+        pattern = setPattern(textPatternStrings);
+        for (let x = 0; x < size.x; x++) {
+            const l = [];
+            const pl = [];
+            for (let y = 0; y < size.y; y++) {
+                l.push({ code: 0, color: defaultColor, background: 0 });
+                pl.push({ code: 0, color: defaultColor, background: 0 });
+            }
+            grid.push(l);
+            prevGrid.push(pl);
+        }
+    }
+    function setPattern(patternStrings) {
+        const pattern = [];
+        patternStrings.forEach((tp) => {
             const p = [];
             const ls = tp.split("\n");
             for (let y = 1; y <= letterSize.y; y++) {
@@ -997,16 +1021,7 @@ lll
             }
             pattern.push(p);
         });
-        for (let x = 0; x < size.x; x++) {
-            const l = [];
-            const pl = [];
-            for (let y = 0; y < size.y; y++) {
-                l.push({ code: 0, color: defaultColor, background: 0 });
-                pl.push({ code: 0, color: defaultColor, background: 0 });
-            }
-            grid.push(l);
-            prevGrid.push(pl);
-        }
+        return pattern;
     }
     function update() {
         for (let x = 0; x < size.x; x++) {
@@ -1063,18 +1078,21 @@ lll
     const KEY_UP = 3;
     const KEY_X = 4;
     const KEY_Z = 5;
-    const KEY_COUNT = 6;
+    const KEY_MUTE = 6;
+    const KEY_COUNT = 7;
     const KEY_STATE_IS_PRESSED = 1;
     const KEY_STATE_IS_JUST_PRESSED = 2;
     const KEY_STATE_IS_JUST_RELEASED = 4;
     const BUZZER_COUNT = 1;
+    const MUTE_COUNT = 1;
     const ADDRESS_VIDEO = 0;
     const ADDRESS_TEXT = VIDEO_WIDTH * VIDEO_HEIGHT;
     const ADDRESS_TEXT_COLOR = ADDRESS_TEXT + TEXT_WIDTH * TEXT_HEIGHT;
     const ADDRESS_TEXT_BACKGROUND = ADDRESS_TEXT_COLOR + TEXT_WIDTH * TEXT_HEIGHT;
     const ADDRESS_KEY = ADDRESS_TEXT_BACKGROUND + TEXT_WIDTH * TEXT_HEIGHT;
     const ADDRESS_BUZZER = ADDRESS_KEY + KEY_COUNT;
-    const ADDRESS_COUNT = ADDRESS_BUZZER + BUZZER_COUNT;
+    const ADDRESS_MUTE = ADDRESS_BUZZER + BUZZER_COUNT;
+    const ADDRESS_COUNT = ADDRESS_MUTE + MUTE_COUNT;
     function peek(address) {
         if (address < 0 || address >= ADDRESS_COUNT) {
             throw `Invalid address: peek ${address}`;
@@ -1089,6 +1107,7 @@ lll
     }
     window.addEventListener("load", onLoad);
     const memory = [];
+    let iconPattern;
     function onLoad() {
         for (let i = 0; i < ADDRESS_COUNT; i++) {
             memory.push(0);
@@ -1099,8 +1118,9 @@ lll
         init$4();
         init$2();
         initColors();
-        initCanvas();
         init(COLOR_WHITE);
+        iconPattern = setPattern(iconPatternStrings);
+        initCanvas();
         setup();
         requestAnimationFrame(updateFrame);
     }
@@ -1135,9 +1155,10 @@ lll
         ["ArrowUp", "KeyW"],
         ["KeyX", "Slash", "Space"],
         ["KeyZ", "Period"],
+        ["KeyM"],
     ];
     function updateKeyboardMemory() {
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < KEY_COUNT; i++) {
             let k = 0;
             keyCodes[i].forEach((c) => {
                 if (codeState[c].isPressed) {
@@ -1161,6 +1182,10 @@ lll
             }
             memory[ADDRESS_KEY + i] = k;
             buttons[i].isShowingPressed = (k & KEY_STATE_IS_PRESSED) > 0;
+        }
+        if ((memory[ADDRESS_KEY + KEY_MUTE] & KEY_STATE_IS_JUST_PRESSED) > 0) {
+            memory[ADDRESS_MUTE] = memory[ADDRESS_MUTE] === 0 ? 1 : 0;
+            drawBuzzerIcon();
         }
     }
     function updateVideo() {
@@ -1191,7 +1216,7 @@ lll
         }
     }
     function updateBuzzer() {
-        if (memory[ADDRESS_BUZZER] > 0) {
+        if (memory[ADDRESS_BUZZER] > 0 && memory[ADDRESS_MUTE] === 0) {
             beepOn(memory[ADDRESS_BUZZER] * 10);
         }
         else {
@@ -1244,6 +1269,10 @@ image-rendering: pixelated;
         canvasContext.fillRect(screenCanvasX, screenCanvasY, VIDEO_WIDTH, VIDEO_HEIGHT);
         init$1(canvasContext, colorStyles, screenCanvasX, screenCanvasY);
         initButtons();
+        canvasContext.fillStyle = colorStyles[COLOR_BLUE];
+        drawText(pattern["X".charCodeAt(0) - 33], Math.floor(canvasWidth * 0.87), Math.floor(canvasHeight * 0.8));
+        drawText(pattern["Z".charCodeAt(0) - 33], Math.floor(canvasWidth * 0.65), Math.floor(canvasHeight * 0.9));
+        drawBuzzerIcon();
         const setSize = () => {
             const cs = 0.95;
             const wr = innerWidth / innerHeight;
@@ -1293,6 +1322,11 @@ image-rendering: pixelated;
                 y: Math.floor(canvasHeight * 0.85),
                 size,
             },
+            {
+                x: Math.floor(canvasWidth * 0.75),
+                y: Math.floor(canvasHeight * 0.55),
+                size: Math.floor(size * 0.66),
+            },
         ];
         init$3(canvas, { x: canvasWidth, y: canvasHeight }, buttonPositions);
         drawButtons();
@@ -1310,6 +1344,20 @@ image-rendering: pixelated;
                 canvasContext.fillRect(x + 1, y + 2, 1, 1);
             }
         });
+    }
+    function drawText(pattern, ox, oy) {
+        for (let x = 0; x < letterSize.x; x++) {
+            for (let y = 0; y < letterSize.y; y++) {
+                if (pattern[y][x]) {
+                    canvasContext.fillRect(ox + x, oy + y, 1, 1);
+                }
+            }
+        }
+    }
+    function drawBuzzerIcon() {
+        canvasContext.fillStyle =
+            colorStyles[memory[ADDRESS_MUTE] === 0 ? COLOR_RED : COLOR_BLACK];
+        drawText(iconPattern[0], Math.floor(canvasWidth * 0.85), Math.floor(canvasHeight * 0.53));
     }
     let colorStyles;
     function initColors() {
@@ -1330,6 +1378,7 @@ image-rendering: pixelated;
     exports.ADDRESS_BUZZER = ADDRESS_BUZZER;
     exports.ADDRESS_COUNT = ADDRESS_COUNT;
     exports.ADDRESS_KEY = ADDRESS_KEY;
+    exports.ADDRESS_MUTE = ADDRESS_MUTE;
     exports.ADDRESS_TEXT = ADDRESS_TEXT;
     exports.ADDRESS_TEXT_BACKGROUND = ADDRESS_TEXT_BACKGROUND;
     exports.ADDRESS_TEXT_COLOR = ADDRESS_TEXT_COLOR;
@@ -1347,6 +1396,7 @@ image-rendering: pixelated;
     exports.KEY_COUNT = KEY_COUNT;
     exports.KEY_DOWN = KEY_DOWN;
     exports.KEY_LEFT = KEY_LEFT;
+    exports.KEY_MUTE = KEY_MUTE;
     exports.KEY_RIGHT = KEY_RIGHT;
     exports.KEY_STATE_IS_JUST_PRESSED = KEY_STATE_IS_JUST_PRESSED;
     exports.KEY_STATE_IS_JUST_RELEASED = KEY_STATE_IS_JUST_RELEASED;
@@ -1354,6 +1404,7 @@ image-rendering: pixelated;
     exports.KEY_UP = KEY_UP;
     exports.KEY_X = KEY_X;
     exports.KEY_Z = KEY_Z;
+    exports.MUTE_COUNT = MUTE_COUNT;
     exports.TEXT_HEIGHT = TEXT_HEIGHT;
     exports.TEXT_WIDTH = TEXT_WIDTH;
     exports.VIDEO_HEIGHT = VIDEO_HEIGHT;

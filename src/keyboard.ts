@@ -80,4 +80,5 @@ export const codes = [
   "Space",
   "KeyZ",
   "Period",
+  "KeyM",
 ];

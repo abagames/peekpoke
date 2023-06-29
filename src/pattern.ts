@@ -1,4 +1,4 @@
-export const textPatterns = [
+export const textPatternStrings = [
   // !
   `
  l
@@ -660,6 +660,16 @@ ll
 
 l
 lll
+  l
+
+`,
+];
+
+export const iconPatternStrings = [
+  `
+  l
+l l
+l l
   l
 
 `,

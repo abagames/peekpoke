@@ -3,6 +3,7 @@ import * as virtualPad from "./virtualPad";
 import * as buzzer from "./buzzer";
 import * as screen from "./screen";
 import * as text from "./text";
+import { iconPatternStrings } from "./pattern";
 
 export const VIDEO_WIDTH = screen.size.x;
 export const VIDEO_HEIGHT = screen.size.y;
@@ -23,11 +24,13 @@ export const KEY_LEFT = 2;
 export const KEY_UP = 3;
 export const KEY_X = 4;
 export const KEY_Z = 5;
-export const KEY_COUNT = 6;
+export const KEY_MUTE = 6;
+export const KEY_COUNT = 7;
 export const KEY_STATE_IS_PRESSED = 1;
 export const KEY_STATE_IS_JUST_PRESSED = 2;
 export const KEY_STATE_IS_JUST_RELEASED = 4;
 export const BUZZER_COUNT = 1;
+export const MUTE_COUNT = 1;
 export const ADDRESS_VIDEO = 0;
 export const ADDRESS_TEXT = VIDEO_WIDTH * VIDEO_HEIGHT;
 export const ADDRESS_TEXT_COLOR = ADDRESS_TEXT + TEXT_WIDTH * TEXT_HEIGHT;
@@ -35,7 +38,8 @@ export const ADDRESS_TEXT_BACKGROUND =
   ADDRESS_TEXT_COLOR + TEXT_WIDTH * TEXT_HEIGHT;
 export const ADDRESS_KEY = ADDRESS_TEXT_BACKGROUND + TEXT_WIDTH * TEXT_HEIGHT;
 export const ADDRESS_BUZZER = ADDRESS_KEY + KEY_COUNT;
-export const ADDRESS_COUNT = ADDRESS_BUZZER + BUZZER_COUNT;
+export const ADDRESS_MUTE = ADDRESS_BUZZER + BUZZER_COUNT;
+export const ADDRESS_COUNT = ADDRESS_MUTE + MUTE_COUNT;
 
 declare function setup();
 declare function loop();
@@ -57,6 +61,7 @@ export function poke(address: number, value: number): void {
 window.addEventListener("load", onLoad);
 
 const memory: number[] = [];
+let iconPattern: boolean[][][];
 
 function onLoad() {
   for (let i = 0; i < ADDRESS_COUNT; i++) {
@@ -72,8 +77,9 @@ function onLoad() {
   keyboard.init();
   buzzer.init();
   initColors();
-  initCanvas();
   text.init(COLOR_WHITE);
+  iconPattern = text.setPattern(iconPatternStrings);
+  initCanvas();
   setup();
   requestAnimationFrame(updateFrame);
 }
@@ -111,9 +117,10 @@ const keyCodes = [
   ["ArrowUp", "KeyW"],
   ["KeyX", "Slash", "Space"],
   ["KeyZ", "Period"],
+  ["KeyM"],
 ];
 function updateKeyboardMemory() {
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < KEY_COUNT; i++) {
     let k = 0;
     keyCodes[i].forEach((c) => {
       if (keyboard.codeState[c].isPressed) {
@@ -137,6 +144,10 @@ function updateKeyboardMemory() {
     }
     memory[ADDRESS_KEY + i] = k;
     virtualPad.buttons[i].isShowingPressed = (k & KEY_STATE_IS_PRESSED) > 0;
+  }
+  if ((memory[ADDRESS_KEY + KEY_MUTE] & KEY_STATE_IS_JUST_PRESSED) > 0) {
+    memory[ADDRESS_MUTE] = memory[ADDRESS_MUTE] === 0 ? 1 : 0;
+    drawBuzzerIcon();
   }
 }
 
@@ -174,7 +185,7 @@ function updateText() {
 }
 
 function updateBuzzer() {
-  if (memory[ADDRESS_BUZZER] > 0) {
+  if (memory[ADDRESS_BUZZER] > 0 && memory[ADDRESS_MUTE] === 0) {
     buzzer.beepOn(memory[ADDRESS_BUZZER] * 10);
   } else {
     buzzer.beepOff();
@@ -238,6 +249,18 @@ image-rendering: pixelated;
   );
   screen.init(canvasContext, colorStyles, screenCanvasX, screenCanvasY);
   initButtons();
+  canvasContext.fillStyle = colorStyles[COLOR_BLUE];
+  drawText(
+    text.pattern["X".charCodeAt(0) - 33],
+    Math.floor(canvasWidth * 0.87),
+    Math.floor(canvasHeight * 0.8)
+  );
+  drawText(
+    text.pattern["Z".charCodeAt(0) - 33],
+    Math.floor(canvasWidth * 0.65),
+    Math.floor(canvasHeight * 0.9)
+  );
+  drawBuzzerIcon();
   const setSize = () => {
     const cs = 0.95;
     const wr = innerWidth / innerHeight;
@@ -288,6 +311,11 @@ function initButtons() {
       y: Math.floor(canvasHeight * 0.85),
       size,
     },
+    {
+      x: Math.floor(canvasWidth * 0.75),
+      y: Math.floor(canvasHeight * 0.55),
+      size: Math.floor(size * 0.66),
+    },
   ];
   virtualPad.init(canvas, { x: canvasWidth, y: canvasHeight }, buttonPositions);
   drawButtons();
@@ -306,6 +334,26 @@ function drawButtons() {
       canvasContext.fillRect(x + 1, y + 2, 1, 1);
     }
   });
+}
+
+function drawText(pattern: boolean[][], ox: number, oy: number) {
+  for (let x = 0; x < text.letterSize.x; x++) {
+    for (let y = 0; y < text.letterSize.y; y++) {
+      if (pattern[y][x]) {
+        canvasContext.fillRect(ox + x, oy + y, 1, 1);
+      }
+    }
+  }
+}
+
+function drawBuzzerIcon() {
+  canvasContext.fillStyle =
+    colorStyles[memory[ADDRESS_MUTE] === 0 ? COLOR_RED : COLOR_BLACK];
+  drawText(
+    iconPattern[0],
+    Math.floor(canvasWidth * 0.85),
+    Math.floor(canvasHeight * 0.53)
+  );
 }
 
 let colorStyles: string[];

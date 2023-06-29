@@ -1,15 +1,30 @@
-import { textPatterns } from "./textPattern";
+import { textPatternStrings } from "./pattern";
 import * as screen from "./screen";
 
 export const size = { x: 8, y: 5 };
+export const letterSize = { x: 3, y: 5 };
 export type Cell = { code: number; color: number; background: number };
 export const grid: Cell[][] = [];
+export let pattern: boolean[][][];
 const prevGrid: Cell[][] = [];
-const pattern: boolean[][][] = [];
-const letterSize = { x: 3, y: 5 };
 
 export function init(defaultColor: number) {
-  textPatterns.forEach((tp) => {
+  pattern = setPattern(textPatternStrings);
+  for (let x = 0; x < size.x; x++) {
+    const l = [];
+    const pl = [];
+    for (let y = 0; y < size.y; y++) {
+      l.push({ code: 0, color: defaultColor, background: 0 });
+      pl.push({ code: 0, color: defaultColor, background: 0 });
+    }
+    grid.push(l);
+    prevGrid.push(pl);
+  }
+}
+
+export function setPattern(patternStrings: string[]): boolean[][][] {
+  const pattern = [];
+  patternStrings.forEach((tp) => {
     const p = [];
     const ls = tp.split("\n");
     for (let y = 1; y <= letterSize.y; y++) {
@@ -22,16 +37,7 @@ export function init(defaultColor: number) {
     }
     pattern.push(p);
   });
-  for (let x = 0; x < size.x; x++) {
-    const l = [];
-    const pl = [];
-    for (let y = 0; y < size.y; y++) {
-      l.push({ code: 0, color: defaultColor, background: 0 });
-      pl.push({ code: 0, color: defaultColor, background: 0 });
-    }
-    grid.push(l);
-    prevGrid.push(pl);
-  }
+  return pattern;
 }
 
 export function update() {
