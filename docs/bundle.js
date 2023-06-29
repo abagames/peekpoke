@@ -662,7 +662,7 @@ lll
         `
 ll
 l l
-lll
+ll
 l l
 l l
 `,
@@ -1027,11 +1027,9 @@ lll
     function drawPattern(x, y, c) {
         const ox = 1 + x * (letterSize.x + 1);
         const oy = 1 + y * (letterSize.y + 1);
-        if (c.background > 0) {
-            for (let x = -1; x < letterSize.x; x++) {
-                for (let y = -1; y < letterSize.y; y++) {
-                    textPixels[ox + x][oy + y] = c.background;
-                }
+        for (let x = -1; x < letterSize.x; x++) {
+            for (let y = -1; y < letterSize.y; y++) {
+                textPixels[ox + x][oy + y] = c.background;
             }
         }
         if (c.code >= 33 && c.code <= 126) {
