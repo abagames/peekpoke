@@ -692,7 +692,6 @@ const COLOR_GREEN = 4;
 const COLOR_CYAN = 5;
 const COLOR_YELLOW = 6;
 const COLOR_WHITE = 7;
-const COLOR_COUNT = 8;
 window.addEventListener("load", onLoad);
 let textPattern;
 function onLoad() {
@@ -885,4 +884,4 @@ function initColors() {
     }
 }
 
-export { COLOR_BLACK, COLOR_BLUE, COLOR_COUNT, COLOR_CYAN, COLOR_GREEN, COLOR_PURPLE, COLOR_RED, COLOR_WHITE, COLOR_YELLOW };
+export { COLOR_BLACK, COLOR_BLUE, COLOR_CYAN, COLOR_GREEN, COLOR_PURPLE, COLOR_RED, COLOR_WHITE, COLOR_YELLOW };
