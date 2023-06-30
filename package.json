@@ -1,5 +1,5 @@
 {
-  "name": "peek-poke",
+  "name": "peekpoke",
   "version": "1.0.0",
   "description": "Tiny minimal retro fantasy console having only two commands: peek and poke.",
   "main": "docs/bundle.js",
