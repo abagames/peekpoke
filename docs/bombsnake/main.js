@@ -14,6 +14,8 @@ const angleOffsets = [
   { x: 0, y: -1 },
 ];
 
+enableSplashScreen = true;
+
 function setup() {
   setupTitle();
   ticks = 0;

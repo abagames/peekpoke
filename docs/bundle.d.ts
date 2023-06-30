@@ -17,6 +17,7 @@ declare const KEY_LEFT: number;
 declare const KEY_UP: number;
 declare const KEY_X: number;
 declare const KEY_Z: number;
+declare const KEY_MUTE: number;
 declare const KEY_COUNT: number;
 declare const KEY_STATE_IS_PRESSED: number;
 declare const KEY_STATE_IS_JUST_PRESSED: number;
@@ -28,7 +29,10 @@ declare const ADDRESS_TEXT_COLOR: number;
 declare const ADDRESS_TEXT_BACKGROUND: number;
 declare const ADDRESS_KEY: number;
 declare const ADDRESS_BUZZER: number;
+declare const ADDRESS_MUTE: number;
 declare const ADDRESS_COUNT: number;
+
+declare let enableSplashScreen: boolean;
 
 declare function peek(address: number): number;
 declare function poke(address: number, value: number): void;

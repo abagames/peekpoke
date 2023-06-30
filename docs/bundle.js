@@ -1106,8 +1106,10 @@ l l
         memory[address] = value & 0xff;
     }
     window.addEventListener("load", onLoad);
+    window.enableSplashScreen = false;
     const memory = [];
     let iconPattern;
+    let splashScreenTicks = -1;
     function onLoad() {
         for (let i = 0; i < ADDRESS_COUNT; i++) {
             memory.push(0);
@@ -1121,7 +1123,12 @@ l l
         init(COLOR_WHITE);
         iconPattern = setPattern(iconPatternStrings);
         initCanvas();
-        setup();
+        if (window.enableSplashScreen) {
+            splashScreenTicks = 0;
+        }
+        else {
+            setup();
+        }
         requestAnimationFrame(updateFrame);
     }
     const targetFps = 68;
@@ -1141,12 +1148,77 @@ l l
         update$1();
         updateKeyboardMemory();
         drawButtons();
-        loop();
+        if (splashScreenTicks >= 0) {
+            loopSplashScreen();
+        }
+        else {
+            loop();
+        }
         updateVideo();
         updateText();
         update();
         draw();
         updateBuzzer();
+    }
+    const title = "PEEKPOKE";
+    const splashScreenBuzzerSequence = [
+        [100, 80],
+        [0, 85],
+        [200, 88],
+        [0, 93],
+        [0, 9999],
+    ];
+    let splashScreenBuzzerSequenceIndex = 0;
+    function loopSplashScreen() {
+        if (splashScreenTicks ===
+            splashScreenBuzzerSequence[splashScreenBuzzerSequenceIndex][1]) {
+            memory[ADDRESS_BUZZER] =
+                splashScreenBuzzerSequence[splashScreenBuzzerSequenceIndex][0];
+            splashScreenBuzzerSequenceIndex++;
+        }
+        if (splashScreenTicks < 80) {
+            const sequence = Math.floor(splashScreenTicks / 40);
+            for (let i = 0; i < 3; i++) {
+                const tx = Math.floor(Math.random() * TEXT_WIDTH);
+                const ty = Math.floor(Math.random() * TEXT_HEIGHT);
+                let v;
+                if (sequence === 0) {
+                    const n = Math.floor(Math.random() * 16);
+                    v = n < 10 ? "0".charCodeAt(0) + n : "A".charCodeAt(0) + (n - 10);
+                }
+                else {
+                    v = ty === 2 ? title.charCodeAt(tx) : 0;
+                }
+                pokeSplashScreenVideo(tx, ty, v, v);
+            }
+        }
+        else if (splashScreenTicks === 80) {
+            for (let tx = 0; tx < TEXT_WIDTH; tx++) {
+                for (let ty = 0; ty < TEXT_HEIGHT; ty++) {
+                    const v = ty === 2 ? title.charCodeAt(tx) : 0;
+                    pokeSplashScreenVideo(tx, ty, v, 0);
+                }
+            }
+        }
+        else if (splashScreenTicks === 160) {
+            splashScreenTicks = -1;
+            for (let i = ADDRESS_VIDEO; i < ADDRESS_TEXT + TEXT_WIDTH * TEXT_HEIGHT; i++) {
+                memory[i] = 0;
+            }
+            setup();
+            return;
+        }
+        splashScreenTicks++;
+    }
+    function pokeSplashScreenVideo(x, y, tv, vv) {
+        memory[ADDRESS_TEXT + x + y * TEXT_WIDTH] = tv;
+        for (let sx = 0; sx < VIDEO_WIDTH / TEXT_WIDTH; sx++) {
+            const vx = x + sx * TEXT_WIDTH;
+            for (let sy = 0; sy < VIDEO_HEIGHT / TEXT_HEIGHT; sy++) {
+                const vy = y + sy * TEXT_HEIGHT;
+                memory[ADDRESS_VIDEO + vx + vy * VIDEO_WIDTH] = vv;
+            }
+        }
     }
     const keyCodes = [
         ["ArrowRight", "KeyD"],
