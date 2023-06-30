@@ -11,7 +11,7 @@ export default {
     extend: true,
   },
   plugins: [
-    typescript({ tsconfig: "tsconfig-rollup.json" }),
+    typescript({ tsconfig: "tsconfig.json" }),
     commonjs(),
     replace({
       values: { "this.window = this.window": "window" },

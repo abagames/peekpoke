@@ -4,7 +4,8 @@
   "description": "Tiny minimal retro fantasy console having only two commands: peek and poke.",
   "main": "docs/bundle.js",
   "scripts": {
-    "watch_lib": "rollup -c -w --bundleConfigAsCjs"
+    "watch_lib": "rollup -c -w --bundleConfigAsCjs",
+    "watch_memorymap": "rollup -c rollup_memorymap.config.js -w --bundleConfigAsCjs"
   },
   "keywords": [
     "game-development",
