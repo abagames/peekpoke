@@ -19,6 +19,7 @@ enableSplashScreen = true;
 function setup() {
   setupTitle();
   ticks = 0;
+  buzzerTicks = 0;
 }
 
 function loop() {
@@ -37,29 +38,28 @@ function loop() {
 }
 
 function setupTitle() {
-  ticks = -1;
   state = "title";
+  ticks = -1;
   clearVideo();
   print("BOMB", 0, 1);
   print("SNAKE", 1, 2);
 }
 
 function setupInGame() {
-  ticks = -1;
   state = "inGame";
+  ticks = -1;
   score = 0;
   clearText();
   clearVideo();
-  snake = { x: Math.floor(VIDEO_WIDTH * 0.2), y: VIDEO_HEIGHT / 2, angle: 0 };
   gameSpeed = 10;
-  buzzerTicks = 0;
+  snake = { x: Math.floor(VIDEO_WIDTH * 0.2), y: VIDEO_HEIGHT / 2, angle: 0 };
   isAngleChanged = false;
   setBomb(snake.x + 4, snake.y);
 }
 
 function setupGameOver() {
-  ticks = -1;
   state = "gameOver";
+  ticks = -1;
   print("GAME", 1, 2);
   print("OVER", 2, 3);
 }
@@ -69,11 +69,11 @@ function loopTitle() {
   if (t === 0) {
     print("[X]    ", 1, 3);
     print("START", 2, 4);
-  } else if (t == 60) {
+  } else if (t === 60) {
     print("[ARROW]   ", 1, 3);
     print("MOVE ", 2, 4);
   }
-  if ((peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) > 0) {
+  if (peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) {
     setupInGame();
   }
 }
@@ -82,22 +82,22 @@ function loopInGame() {
   const pa = snake.angle;
   if (!isAngleChanged) {
     if (
-      (peek(ADDRESS_KEY + KEY_RIGHT) & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+      peek(ADDRESS_KEY + KEY_RIGHT) & KEY_STATE_IS_JUST_PRESSED &&
       snake.angle !== 2
     ) {
       snake.angle = 0;
     } else if (
-      (peek(ADDRESS_KEY + KEY_DOWN) & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+      peek(ADDRESS_KEY + KEY_DOWN) & KEY_STATE_IS_JUST_PRESSED &&
       snake.angle !== 3
     ) {
       snake.angle = 1;
     } else if (
-      (peek(ADDRESS_KEY + KEY_LEFT) & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+      peek(ADDRESS_KEY + KEY_LEFT) & KEY_STATE_IS_JUST_PRESSED &&
       snake.angle !== 0
     ) {
       snake.angle = 2;
     } else if (
-      (peek(ADDRESS_KEY + KEY_UP) & KEY_STATE_IS_JUST_PRESSED) > 0 &&
+      peek(ADDRESS_KEY + KEY_UP) & KEY_STATE_IS_JUST_PRESSED &&
       snake.angle !== 1
     ) {
       snake.angle = 3;
@@ -148,7 +148,7 @@ function loopInGame() {
 }
 
 function loopGameOver() {
-  if ((peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) > 0) {
+  if (peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) {
     setupInGame();
   }
   if (ticks > 180) {
