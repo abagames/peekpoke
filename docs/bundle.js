@@ -34,9 +34,9 @@
     }
     function update$2() {
         codeStateEntries.forEach(([c, s]) => {
-            s.isJustPressed = pressedCode[c];
-            s.isJustReleased = releasedCode[c];
-            s.isPressed = pressingCode[c];
+            s.isJustPressed = !s.isPressed && pressedCode[c];
+            s.isJustReleased = s.isPressed && releasedCode[c];
+            s.isPressed = !!pressingCode[c];
         });
         pressedCode = {};
         releasedCode = {};
