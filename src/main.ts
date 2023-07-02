@@ -81,8 +81,26 @@ export function poke(address: number, value: number): void {
   memory[address] = value;
 }
 
+const win: any = window;
+win.enableSplashScreen = false;
+
+/**
+ * Initialize PEEKPOKE with the given options.
+ * @param options - The options for configuring the peekpoke functions.
+ */
+export function initPeekpoke(options: {
+  setup: () => void;
+  loop: () => void;
+  enableSplashScreen?: boolean;
+}) {
+  win.setup = options.setup;
+  win.loop = options.loop;
+  if (options.enableSplashScreen != null) {
+    win.enableSplashScreen = options.enableSplashScreen;
+  }
+}
+
 window.addEventListener("load", onLoad);
-(window as any).enableSplashScreen = false;
 
 const memory: number[] = [];
 let iconPattern: boolean[][][];

@@ -44,6 +44,7 @@ declare let enableSplashScreen: boolean;
  * @throws {string} - If the address is invalid.
  */
 declare function peek(address: number): number;
+
 /**
  * Write a value to a memory address.
  *
@@ -55,3 +56,13 @@ declare function poke(address: number, value: number): void;
 
 declare function setup(): void;
 declare function loop(): void;
+
+/**
+ * Initialize PEEKPOKE with the given options.
+ * @param options - The options for configuring the peekpoke functions.
+ */
+declare function initPeekpoke(options: {
+  setup: () => void;
+  loop: () => void;
+  enableSplashScreen?: boolean;
+}): void;

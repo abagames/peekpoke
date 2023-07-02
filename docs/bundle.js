@@ -1126,8 +1126,20 @@ l l
         // Write the value to the memory address
         memory[address] = value;
     }
+    const win = window;
+    win.enableSplashScreen = false;
+    /**
+     * Initialize PEEKPOKE with the given options.
+     * @param options - The options for configuring the peekpoke functions.
+     */
+    function initPeekpoke(options) {
+        win.setup = options.setup;
+        win.loop = options.loop;
+        if (options.enableSplashScreen != null) {
+            win.enableSplashScreen = options.enableSplashScreen;
+        }
+    }
     window.addEventListener("load", onLoad);
-    window.enableSplashScreen = false;
     const memory = [];
     let iconPattern;
     let splashScreenTicks = -1;
@@ -1531,6 +1543,7 @@ image-rendering: pixelated;
     exports.TEXT_WIDTH = TEXT_WIDTH;
     exports.VIDEO_HEIGHT = VIDEO_HEIGHT;
     exports.VIDEO_WIDTH = VIDEO_WIDTH;
+    exports.initPeekpoke = initPeekpoke;
     exports.peek = peek;
     exports.poke = poke;
 
