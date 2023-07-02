@@ -73,7 +73,7 @@ function loopTitle() {
     print("MOVE ", 2, 4);
   } else if (t === 120) {
     print("[X]    ", 1, 3);
-    print("SHOT", 2, 4);
+    print("FIRE", 2, 4);
   }
   if (peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) {
     setupInGame();
@@ -286,9 +286,10 @@ function pget(x, y) {
 }
 
 function beep(freq, duration) {
-  poke(ADDRESS_BUZZER, freq);
+  poke(ADDRESS_BUZZER, Math.floor(freq));
   buzzerTicks = duration;
 }
+
 function wrap(n, high) {
   return ((n % high) + high) % high;
 }

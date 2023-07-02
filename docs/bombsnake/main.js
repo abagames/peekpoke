@@ -118,9 +118,10 @@ function loopInGame() {
     bomb.radius++;
     if (bomb.radius > 5) {
       setBomb(nextBomb.x, nextBomb.y);
+    } else {
+      beep(rndi(30) + bomb.radius * 20, 5);
+      drawBombRadius(COLOR_WHITE + 2 + rndi(6));
     }
-    drawBombRadius(COLOR_WHITE + 2 + rndi(6));
-    beep(rndi(30) + bomb.radius * 20, 5);
   }
   const ao = angleOffsets[snake.angle];
   snake.x = wrap(snake.x + ao.x, VIDEO_WIDTH);
