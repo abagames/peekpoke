@@ -1,12 +1,14 @@
 let snake;
-let ticks;
-let buzzerTicks;
 let isAngleChanged;
 let bomb;
 let nextBomb;
 let gameSpeed;
+// Game state: "title", "inGame", "gameOver"
 let state;
 let score;
+let ticks;
+// How long the buzzer is on. Buzzer is off when buzzerTicks is 0.
+let buzzerTicks;
 const angleOffsets = [
   { x: 1, y: 0 },
   { x: 0, y: 1 },
@@ -14,14 +16,17 @@ const angleOffsets = [
   { x: 0, y: -1 },
 ];
 
+// Enable splash screen.
 enableSplashScreen = true;
 
+// The setup function is called before the game starts.
 function setup() {
   setupTitle();
   ticks = 0;
   buzzerTicks = 0;
 }
 
+// The loop function is called continuously 60 times per second.
 function loop() {
   buzzerTicks--;
   if (buzzerTicks <= 0) {
@@ -73,7 +78,7 @@ function loopTitle() {
     print("[ARROW]   ", 1, 3);
     print("MOVE ", 2, 4);
   }
-  if (peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) {
+  if (isJustPressed(KEY_X)) {
     setupInGame();
   }
 }
@@ -81,31 +86,18 @@ function loopTitle() {
 function loopInGame() {
   const pa = snake.angle;
   if (!isAngleChanged) {
-    if (
-      peek(ADDRESS_KEY + KEY_RIGHT) & KEY_STATE_IS_JUST_PRESSED &&
-      snake.angle !== 2
-    ) {
+    if (isJustPressed(KEY_RIGHT) && snake.angle !== 2) {
       snake.angle = 0;
-    } else if (
-      peek(ADDRESS_KEY + KEY_DOWN) & KEY_STATE_IS_JUST_PRESSED &&
-      snake.angle !== 3
-    ) {
+    } else if (isJustPressed(KEY_DOWN) && snake.angle !== 3) {
       snake.angle = 1;
-    } else if (
-      peek(ADDRESS_KEY + KEY_LEFT) & KEY_STATE_IS_JUST_PRESSED &&
-      snake.angle !== 0
-    ) {
+    } else if (isJustPressed(KEY_LEFT) && snake.angle !== 0) {
       snake.angle = 2;
-    } else if (
-      peek(ADDRESS_KEY + KEY_UP) & KEY_STATE_IS_JUST_PRESSED &&
-      snake.angle !== 1
-    ) {
+    } else if (isJustPressed(KEY_UP) && snake.angle !== 1) {
       snake.angle = 3;
     }
   }
   if (snake.angle !== pa) {
-    poke(ADDRESS_BUZZER, 100);
-    buzzerTicks = 7;
+    beep(100, 7);
     isAngleChanged = true;
   }
   gameSpeed -= 0.001;
@@ -117,8 +109,7 @@ function loopInGame() {
   }
   isAngleChanged = false;
   if (buzzerTicks < 0) {
-    poke(ADDRESS_BUZZER, 10);
-    buzzerTicks = 2;
+    beep(10, 2);
   }
   pset(snake.x, snake.y, COLOR_GREEN);
   if (bomb.radius >= 0) {
@@ -128,8 +119,7 @@ function loopInGame() {
       setBomb(nextBomb.x, nextBomb.y);
     }
     drawBombRadius(COLOR_WHITE + 2 + rndi(6));
-    poke(ADDRESS_BUZZER, rndi(30) + bomb.radius * 20);
-    buzzerTicks = 5;
+    beep(rndi(30) + bomb.radius * 20, 5);
   }
   const ao = angleOffsets[snake.angle];
   snake.x = wrap(snake.x + ao.x, VIDEO_WIDTH);
@@ -140,15 +130,14 @@ function loopInGame() {
   }
   if (pget(snake.x, snake.y) === COLOR_GREEN) {
     setupGameOver();
-    poke(ADDRESS_BUZZER, 33);
-    buzzerTicks = 30;
+    beep(33, 30);
   }
   pset(snake.x, snake.y, COLOR_CYAN);
   drawScore();
 }
 
 function loopGameOver() {
-  if (peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED) {
+  if (isJustPressed(KEY_X)) {
     setupInGame();
   }
   if (ticks > 180) {
@@ -231,10 +220,16 @@ function pgetWrapped(x, y, c) {
   return peek(ADDRESS_VIDEO + px + py * VIDEO_WIDTH);
 }
 
+// Print the given text at the specified position.
 function print(text, x, y) {
+  // Iterate through each character in the text
   for (let i = 0; i < text.length; i++) {
+    // Get the ASCII code of the current character
     const c = text.charCodeAt(i);
-    poke(ADDRESS_TEXT + x + i + y * TEXT_WIDTH, c);
+    // Calculate the memory address of the current character
+    const address = ADDRESS_TEXT + x + i + y * TEXT_WIDTH;
+    // Store the ASCII code at the calculated memory address
+    poke(address, c);
   }
 }
 
@@ -254,12 +249,26 @@ function clearText() {
   }
 }
 
+// Set the color of a pixel at the specified coordinates.
 function pset(x, y, c) {
   poke(ADDRESS_VIDEO + x + y * VIDEO_WIDTH, c);
 }
 
+// Get the color of a pixel at the specified coordinates.
 function pget(x, y) {
   return peek(ADDRESS_VIDEO + x + y * VIDEO_WIDTH);
+}
+
+// Set the frequency and duration of the buzzer.
+function beep(freq, duration) {
+  poke(ADDRESS_BUZZER, freq);
+  buzzerTicks = duration;
+}
+
+// Check if a key is just pressed.
+// Specify the target key by passing KEY_UP, KEY_X, ... constants as the first parameter.
+function isJustPressed(key) {
+  return peek(ADDRESS_KEY + key) & KEY_STATE_IS_JUST_PRESSED;
 }
 
 function wrap(n, high) {

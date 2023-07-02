@@ -1093,16 +1093,34 @@ l l
     const ADDRESS_BUZZER = ADDRESS_KEY + KEY_COUNT;
     const ADDRESS_MUTE = ADDRESS_BUZZER + BUZZER_COUNT;
     const ADDRESS_COUNT = ADDRESS_MUTE + MUTE_COUNT;
+    /**
+     * Retrieve the value at the specified address in memory.
+     *
+     * @param {number} address - The address to peek at.
+     * @returns {number} - The value at the specified address.
+     * @throws {string} - If the address is invalid.
+     */
     function peek(address) {
+        // Check if the address is within the valid range
         if (address < 0 || address >= ADDRESS_COUNT) {
             throw `Invalid address: peek ${address}`;
         }
+        // Return the value at the specified address
         return memory[address];
     }
+    /**
+     * Write a value to a memory address.
+     *
+     * @param address - The memory address to write to.
+     * @param value - The value to write.
+     * @throws {string} - If the address is invalid.
+     */
     function poke(address, value) {
+        // Check if the address is out of bounds
         if (address < 0 || address >= ADDRESS_COUNT) {
             throw `Invalid address: poke ${address}`;
         }
+        // Write the value to the memory address
         memory[address] = value & 0xff;
     }
     window.addEventListener("load", onLoad);
@@ -1129,6 +1147,13 @@ l l
         else {
             setup();
         }
+        // Capturing the canvas with gif-capture-canvas
+        /*(window as any).gcc.setOptions({
+          scale: 3,
+          durationSec: 9,
+          capturingFps: 60,
+          isSmoothingEnabled: false,
+        });*/
         requestAnimationFrame(updateFrame);
     }
     const targetFps = 68;
@@ -1159,6 +1184,8 @@ l l
         update();
         draw();
         updateBuzzer();
+        // Capturing the canvas with gif-capture-canvas
+        //(window as any).gcc.capture(canvas);
     }
     const title = "PEEKPOKE";
     const splashScreenBuzzerSequence = [
@@ -1331,6 +1358,8 @@ image-rendering: pixelated;
         canvasContext = canvas.getContext("2d");
         canvasContext.imageSmoothingEnabled = false;
         canvas.style.cssText = canvasCss + crispCss;
+        canvasContext.fillStyle = colorStyles[COLOR_CYAN];
+        canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
         const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
         const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
         const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);

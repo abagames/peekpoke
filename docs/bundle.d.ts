@@ -23,6 +23,7 @@ declare const KEY_STATE_IS_PRESSED: number;
 declare const KEY_STATE_IS_JUST_PRESSED: number;
 declare const KEY_STATE_IS_JUST_RELEASED: number;
 declare const BUZZER_COUNT: number;
+declare const MUTE_COUNT: number;
 declare const ADDRESS_VIDEO: number;
 declare const ADDRESS_TEXT: number;
 declare const ADDRESS_TEXT_COLOR: number;
@@ -32,9 +33,24 @@ declare const ADDRESS_BUZZER: number;
 declare const ADDRESS_MUTE: number;
 declare const ADDRESS_COUNT: number;
 
+// Set enableSplashScreen to true to enable the splash screen.
 declare let enableSplashScreen: boolean;
 
+/**
+ * Retrieve the value at the specified address in memory.
+ *
+ * @param {number} address - The address to peek at.
+ * @returns {number} - The value at the specified address.
+ * @throws {string} - If the address is invalid.
+ */
 declare function peek(address: number): number;
+/**
+ * Write a value to a memory address.
+ *
+ * @param address - The memory address to write to.
+ * @param value - The value to write.
+ * @throws {string} - If the address is invalid.
+ */
 declare function poke(address: number, value: number): void;
 
 declare function setup(): void;
