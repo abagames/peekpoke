@@ -304,7 +304,7 @@
             for (let y = 0; y < size$1.y; y++) {
                 const p = textPixels[x][y] === 0 ? pixels[x][y] : textPixels[x][y];
                 if (prevPixels[x][y] !== p) {
-                    canvasContext$1.fillStyle = colorStyles$1[p];
+                    canvasContext$1.fillStyle = colorStyles$1[p % COLOR_COUNT];
                     canvasContext$1.fillRect(x + screenCanvasX, y + screenCanvasY, 1, 1);
                     prevPixels[x][y] = p;
                 }
@@ -1071,7 +1071,7 @@ l l
     const COLOR_CYAN = 5;
     const COLOR_YELLOW = 6;
     const COLOR_WHITE = 7;
-    const COLOR_COUNT = 8;
+    const COLOR_COUNT$1 = 8;
     const KEY_RIGHT = 0;
     const KEY_DOWN = 1;
     const KEY_LEFT = 2;
@@ -1314,7 +1314,7 @@ l l
         let x = 0;
         let y = 0;
         for (let i = ADDRESS_VIDEO; i < ADDRESS_VIDEO + VIDEO_WIDTH * VIDEO_HEIGHT; i++) {
-            pixels[x][y] = memory[i] % COLOR_COUNT;
+            pixels[x][y] = memory[i];
             x++;
             if (x >= VIDEO_WIDTH) {
                 x = 0;
@@ -1328,8 +1328,8 @@ l l
         for (let i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++) {
             const tg = grid[x][y];
             tg.code = memory[ADDRESS_TEXT + i];
-            tg.color = memory[ADDRESS_TEXT_COLOR + i] % COLOR_COUNT;
-            tg.background = memory[ADDRESS_TEXT_BACKGROUND + i] % COLOR_COUNT;
+            tg.color = memory[ADDRESS_TEXT_COLOR + i];
+            tg.background = memory[ADDRESS_TEXT_BACKGROUND + i];
             x++;
             if (x >= TEXT_WIDTH) {
                 x = 0;
@@ -1520,7 +1520,7 @@ image-rendering: pixelated;
     exports.BUZZER_COUNT = BUZZER_COUNT;
     exports.COLOR_BLACK = COLOR_BLACK;
     exports.COLOR_BLUE = COLOR_BLUE;
-    exports.COLOR_COUNT = COLOR_COUNT;
+    exports.COLOR_COUNT = COLOR_COUNT$1;
     exports.COLOR_CYAN = COLOR_CYAN;
     exports.COLOR_GREEN = COLOR_GREEN;
     exports.COLOR_PURPLE = COLOR_PURPLE;

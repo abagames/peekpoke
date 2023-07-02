@@ -296,7 +296,7 @@ function updateVideo() {
     i < ADDRESS_VIDEO + VIDEO_WIDTH * VIDEO_HEIGHT;
     i++
   ) {
-    screen.pixels[x][y] = memory[i] % COLOR_COUNT;
+    screen.pixels[x][y] = memory[i];
     x++;
     if (x >= VIDEO_WIDTH) {
       x = 0;
@@ -311,8 +311,8 @@ function updateText() {
   for (let i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++) {
     const tg = text.grid[x][y];
     tg.code = memory[ADDRESS_TEXT + i];
-    tg.color = memory[ADDRESS_TEXT_COLOR + i] % COLOR_COUNT;
-    tg.background = memory[ADDRESS_TEXT_BACKGROUND + i] % COLOR_COUNT;
+    tg.color = memory[ADDRESS_TEXT_COLOR + i];
+    tg.background = memory[ADDRESS_TEXT_BACKGROUND + i];
     x++;
     if (x >= TEXT_WIDTH) {
       x = 0;

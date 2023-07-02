@@ -37,7 +37,7 @@ export function draw() {
     for (let y = 0; y < size.y; y++) {
       const p = textPixels[x][y] === 0 ? pixels[x][y] : textPixels[x][y];
       if (prevPixels[x][y] !== p) {
-        canvasContext.fillStyle = colorStyles[p];
+        canvasContext.fillStyle = colorStyles[p % COLOR_COUNT];
         canvasContext.fillRect(x + screenCanvasX, y + screenCanvasY, 1, 1);
         prevPixels[x][y] = p;
       }
