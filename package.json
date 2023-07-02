@@ -2,17 +2,23 @@
   "name": "peekpoke",
   "version": "1.0.0",
   "description": "Tiny minimal retro fantasy console having only two commands: peek and poke.",
-  "main": "docs/bundle.js",
-  "scripts": {
-    "watch_lib": "rollup -c -w --bundleConfigAsCjs",
-    "watch_memorymap": "rollup -c rollup_memorymap.config.js -w --bundleConfigAsCjs"
-  },
   "keywords": [
     "game-development",
     "fantasy-console"
   ],
   "author": "abagames",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abagames/peekpoke.git"
+  },
+  "homepage": "https://github.com/abagames/peekpoke",  
+  "main": "docs/bundle.js",
+  "typings": "docs/bundle.d.ts",
+  "scripts": {
+    "watch_lib": "rollup -c -w --bundleConfigAsCjs",
+    "watch_memorymap": "rollup -c rollup_memorymap.config.js -w --bundleConfigAsCjs"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-replace": "^5.0.2",
