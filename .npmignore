@@ -1,0 +1,5 @@
+docs/*/
+src/
+src_memorymap/
+.vscode/
+package-lock.json
