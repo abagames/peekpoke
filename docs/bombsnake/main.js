@@ -3,18 +3,12 @@ let isAngleChanged;
 let bomb;
 let nextBomb;
 let gameSpeed;
-// Game state: "title", "inGame", "gameOver"
-let state;
 let score;
 let ticks;
 // How long the buzzer is on. Buzzer is off when buzzerTicks is 0.
 let buzzerTicks;
-const angleOffsets = [
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-  { x: -1, y: 0 },
-  { x: 0, y: -1 },
-];
+// Game state: "title", "inGame", "gameOver"
+let state;
 
 // Enable splash screen.
 enableSplashScreen = true;
@@ -82,6 +76,13 @@ function loopTitle() {
     setupInGame();
   }
 }
+
+const angleOffsets = [
+  { x: 1, y: 0 },
+  { x: 0, y: 1 },
+  { x: -1, y: 0 },
+  { x: 0, y: -1 },
+];
 
 function loopInGame() {
   const pa = snake.angle;
