@@ -1,4 +1,6 @@
 docs/*/
+docs/*.png
+docs/*.gif
 src/
 src_memorymap/
 .vscode/
