@@ -181,14 +181,19 @@ function loopSplashScreen() {
       }
       pokeSplashScreenVideo(tx, ty, v, v);
     }
-  } else if (splashScreenTicks === 80) {
+  }
+  if (splashScreenTicks === 80) {
     for (let tx = 0; tx < TEXT_WIDTH; tx++) {
       for (let ty = 0; ty < TEXT_HEIGHT; ty++) {
         const v = ty === 2 ? title.charCodeAt(tx) : 0;
         pokeSplashScreenVideo(tx, ty, v, 0);
       }
     }
-  } else if (splashScreenTicks === 160) {
+  }
+  if (
+    splashScreenTicks === 160 ||
+    peek(ADDRESS_KEY + KEY_X) & KEY_STATE_IS_JUST_PRESSED
+  ) {
     splashScreenTicks = -1;
     for (
       let i = ADDRESS_VIDEO;
@@ -197,6 +202,7 @@ function loopSplashScreen() {
     ) {
       memory[i] = 0;
     }
+    memory[ADDRESS_BUZZER] = 0;
     setup();
     return;
   }
