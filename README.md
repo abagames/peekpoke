@@ -67,3 +67,4 @@ poke(ADDRESS_BUZZER, 0);
 ## Other sample games
 
 - [DASH RACKET](https://abagames.github.io/peekpoke/dashracket/) ([code](./docs/dashracket/main.js))
+- [BEEBEES](https://abagames.github.io/peekpoke/beebees/) ([code](./docs/beebees/main.js))
