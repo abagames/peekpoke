@@ -1102,8 +1102,8 @@ l l
      */
     function peek(address) {
         // Check if the address is within the valid range
-        if (address < 0 || address >= ADDRESS_COUNT) {
-            throw `Invalid address: peek ${address}`;
+        if (address < 0 || address >= ADDRESS_COUNT || !Number.isInteger(address)) {
+            throw new ErrorWithStackTrace(`Invalid address: peek(${address})`);
         }
         // Return the value at the specified address
         return memory[address];
@@ -1113,15 +1113,18 @@ l l
      *
      * @param address - The memory address to write to.
      * @param value - The value to write.
-     * @throws {string} - If the address is invalid.
+     * @throws {string} - If the address or value is invalid.
      */
     function poke(address, value) {
         // Check if the address is out of bounds
-        if (address < 0 || address >= ADDRESS_COUNT) {
-            throw `Invalid address: poke ${address}`;
+        if (address < 0 || address >= ADDRESS_COUNT || !Number.isInteger(address)) {
+            throw new ErrorWithStackTrace(`Invalid address: poke(${address}, ${value})`);
+        }
+        if (value < 0 || value >= 256 || !Number.isInteger(value)) {
+            throw new ErrorWithStackTrace(`Invalid value: poke(${address}, ${value})`);
         }
         // Write the value to the memory address
-        memory[address] = value & 0xff;
+        memory[address] = value;
     }
     window.addEventListener("load", onLoad);
     window.enableSplashScreen = false;
@@ -1160,7 +1163,7 @@ l l
     const deltaTime = 1000 / targetFps;
     let nextFrameTime = 0;
     function updateFrame() {
-        requestAnimationFrame(updateFrame);
+        const requestId = requestAnimationFrame(updateFrame);
         const now = window.performance.now();
         if (now < nextFrameTime - targetFps / 12) {
             return;
@@ -1169,23 +1172,29 @@ l l
         if (nextFrameTime < now || nextFrameTime > now + deltaTime * 2) {
             nextFrameTime = now + deltaTime;
         }
-        update$2();
-        update$1();
-        updateKeyboardMemory();
-        drawButtons();
-        if (splashScreenTicks >= 0) {
-            loopSplashScreen();
+        try {
+            update$2();
+            update$1();
+            updateKeyboardMemory();
+            drawButtons();
+            if (splashScreenTicks >= 0) {
+                loopSplashScreen();
+            }
+            else {
+                loop();
+            }
+            updateVideo();
+            updateText();
+            update();
+            draw();
+            updateBuzzer();
+            // Capturing the canvas with gif-capture-canvas
+            //(window as any).gcc.capture(canvas);
         }
-        else {
-            loop();
+        catch (e) {
+            cancelAnimationFrame(requestId);
+            console.error(e);
         }
-        updateVideo();
-        updateText();
-        update();
-        draw();
-        updateBuzzer();
-        // Capturing the canvas with gif-capture-canvas
-        //(window as any).gcc.capture(canvas);
     }
     const title = "PEEKPOKE";
     const splashScreenBuzzerSequence = [
@@ -1475,6 +1484,16 @@ image-rendering: pixelated;
             const g = (n & 0xff00) >> 8;
             const b = n & 0xff;
             colorStyles.push(`rgb(${r},${g},${b})`);
+        }
+    }
+    class ErrorWithStackTrace extends Error {
+        constructor(message) {
+            super(message);
+            this.name = "Error";
+            const er = Error;
+            if (er.captureStackTrace) {
+                er.captureStackTrace(this, this.constructor);
+            }
         }
     }
 
