@@ -44,7 +44,7 @@ poke(ADDRESS_TEXT_COLOR + x + i + y * TEXT_WIDTH, COLOR_GREEN);
 poke(ADDRESS_TEXT_BACKGROUND + x + i + y * TEXT_WIDTH, COLOR_BLUE);
 ```
 
-### Check keystroke status
+### Check keystroke state
 
 ```JavaScript
 // Check if the up key is pressed.
