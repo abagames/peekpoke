@@ -14,7 +14,6 @@ Games for PEEKPOKE can be written in [simple JavaScript code](https://github.com
 
 You can draw pixels or text by writing a number to a specific address in memory (poke), or get the input status of a key by reading a number from the address (peek).
 
-<!--
 ## Getting started
 
 Download [docs/getting_started/index.html](https://raw.githubusercontent.com/abagames/peekpoke/main/docs/getting_started/index.html) and write your game code in the `<script>` element. Open `index.html` in a browser and play the game.
@@ -35,7 +34,6 @@ function setup() { ... }
 
 function loop() { ... }
 ```
--->
 
 ## Sample snippets
 
