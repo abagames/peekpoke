@@ -48,21 +48,21 @@ poke(ADDRESS_VIDEO + x + y * VIDEO_WIDTH, COLOR_RED);
 
 ```JavaScript
 // Draw a 'A' text at (x, y).
-poke(ADDRESS_TEXT + x + i + y * TEXT_WIDTH, "A",charCodeAt(0));
+poke(ADDRESS_TEXT + x + y * TEXT_WIDTH, "A",charCodeAt(0));
 ```
 
 ### Set text color
 
 ```JavaScript
 // Make the text color green.
-poke(ADDRESS_TEXT_COLOR + x + i + y * TEXT_WIDTH, COLOR_GREEN);
+poke(ADDRESS_TEXT_COLOR + x + y * TEXT_WIDTH, COLOR_GREEN);
 ```
 
 ### Set text background color
 
 ```JavaScript
 // Make the text background color blue.
-poke(ADDRESS_TEXT_BACKGROUND + x + i + y * TEXT_WIDTH, COLOR_BLUE);
+poke(ADDRESS_TEXT_BACKGROUND + x + y * TEXT_WIDTH, COLOR_BLUE);
 ```
 
 ### Check keystroke state
