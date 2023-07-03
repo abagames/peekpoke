@@ -36,6 +36,7 @@ function setupTitle() {
   ticks = -1;
   clearVideo();
   print("BEEBEES", 0, 1);
+  print("    ", 1, 2);
 }
 
 function setupInGame() {
