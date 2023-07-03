@@ -4,19 +4,19 @@ Tiny minimum retro fantasy console having only two commands: peek and poke.
 
 ## Sample game 'BOMB SNAKE'
 
-![BOMB SNAKE](./docs/screenshot.gif)
+[![BOMB SNAKE](https://raw.githubusercontent.com/abagames/peekpoke/main/docs/screenshot.gif)](https://abagames.github.io/peekpoke/bombsnake/)
 
-Games for PEEKPOKE can be written in [simple JavaScript code](./docs/bombsnake/main.js). PEEKPOKE games [run in the browser](https://abagames.github.io/peekpoke/bombsnake/) of any PC or mobile device.
+Games for PEEKPOKE can be written in [simple JavaScript code](https://github.com/abagames/peekpoke/blob/main/docs/bombsnake/main.js). PEEKPOKE games [run in the browser](https://abagames.github.io/peekpoke/bombsnake/) of any PC or mobile device.
 
 ## Memory map
 
-![memory_map](./docs/memorymap.png)
+![memory_map](https://raw.githubusercontent.com/abagames/peekpoke/main/docs/memorymap.png)
 
 You can draw pixels or text by writing a number to a specific address in memory (poke), or get the input status of a key by reading a number from the address (peek).
 
 ## Getting started
 
-Download [docs/getting_started/index.html](https://raw.githubusercontent.com/abagames/peekpoke/master/docs/getting_started/index.html) and write your game code in the `<script>` element. Open `index.html` in a browser and play the game.
+Download [docs/getting_started/index.html](https://raw.githubusercontent.com/abagames/peekpoke/main/docs/getting_started/index.html) and write your game code in the `<script>` element. Open `index.html` in a browser and play the game.
 
 ## Use with npm
 
@@ -87,5 +87,5 @@ poke(ADDRESS_BUZZER, 0);
 
 ## Other sample games
 
-- [DASH RACKET](https://abagames.github.io/peekpoke/dashracket/) ([code](./docs/dashracket/main.js))
-- [BEEBEES](https://abagames.github.io/peekpoke/beebees/) ([code](./docs/beebees/main.js))
+- [DASH RACKET](https://abagames.github.io/peekpoke/dashracket/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/dashracket/main.js))
+- [BEEBEES](https://abagames.github.io/peekpoke/beebees/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/beebees/main.js))
