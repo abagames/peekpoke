@@ -89,3 +89,4 @@ poke(ADDRESS_BUZZER, 0);
 
 - [DASH RACKET](https://abagames.github.io/peekpoke/dashracket/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/dashracket/main.js))
 - [BEEBEES](https://abagames.github.io/peekpoke/beebees/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/beebees/main.js))
+- [LASER LASER](https://abagames.github.io/peekpoke/laserlaser/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/laserlaser/main.js))
