@@ -106,6 +106,10 @@ const memory: number[] = [];
 let iconPattern: boolean[][][];
 let splashScreenTicks = -1;
 
+// Set to true to capture the screen.
+// To capture the screen, gif-capture-canvas library should be loaded in index.html.
+const isCapturingScreen = false;
+
 function onLoad() {
   for (let i = 0; i < ADDRESS_COUNT; i++) {
     memory.push(0);
@@ -128,13 +132,9 @@ function onLoad() {
   } else {
     setup();
   }
-  // Capturing the canvas with gif-capture-canvas
-  /*(window as any).gcc.setOptions({
-    scale: 3,
-    durationSec: 9,
-    capturingFps: 60,
-    isSmoothingEnabled: false,
-  });*/
+  if (isCapturingScreen) {
+    initCapturingCanvas();
+  }
   requestAnimationFrame(updateFrame);
 }
 
@@ -167,8 +167,9 @@ function updateFrame() {
     text.update();
     screen.draw();
     updateBuzzer();
-    // Capturing the canvas with gif-capture-canvas
-    //(window as any).gcc.capture(canvas);
+    if (isCapturingScreen) {
+      captureScreen();
+    }
   } catch (e) {
     cancelAnimationFrame(requestId);
     console.error(e);
@@ -331,6 +332,8 @@ function updateBuzzer() {
 
 const canvasWidth = 48;
 const canvasHeight = 80;
+const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
+const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
 let canvas: HTMLCanvasElement;
 let canvasContext: CanvasRenderingContext2D;
 
@@ -368,8 +371,6 @@ image-rendering: pixelated;
   canvas.style.cssText = canvasCss + crispCss;
   canvasContext.fillStyle = colorStyles[COLOR_CYAN];
   canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
-  const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
-  const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
   const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
   const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 5);
   canvasContext.fillStyle = colorStyles[COLOR_YELLOW];
@@ -521,4 +522,37 @@ class ErrorWithStackTrace extends Error {
       er.captureStackTrace(this, this.constructor);
     }
   }
+}
+
+// Capture the screen with gif-capture-canvas.
+let capturingCanvas;
+let capturingCanvasContext;
+const capturingCanvasOffset = { x: 0, y: screenCanvasY - 2 };
+const capturingCanvasSize = { x: canvasWidth, y: VIDEO_HEIGHT + 2 * 2 };
+
+function initCapturingCanvas() {
+  capturingCanvas = document.createElement("canvas");
+  capturingCanvas.width = capturingCanvasSize.x;
+  capturingCanvas.height = capturingCanvasSize.y;
+  capturingCanvasContext = capturingCanvas.getContext("2d");
+  (window as any).gcc.setOptions({
+    scale: 3,
+    capturingFps: 60,
+    isSmoothingEnabled: false,
+  });
+}
+
+function captureScreen() {
+  capturingCanvasContext.drawImage(
+    canvas,
+    capturingCanvasOffset.x,
+    capturingCanvasOffset.y,
+    capturingCanvasSize.x,
+    capturingCanvasSize.y,
+    0,
+    0,
+    capturingCanvasSize.x,
+    capturingCanvasSize.y
+  );
+  (window as any).gcc.capture(capturingCanvas);
 }

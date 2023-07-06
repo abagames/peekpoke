@@ -278,13 +278,13 @@
     const prevPixels = [];
     let canvasContext$1;
     let colorStyles$1;
-    let screenCanvasX;
-    let screenCanvasY;
+    let screenCanvasX$1;
+    let screenCanvasY$1;
     function init$1(_canvasContext, _colorStyles, _screenCanvasX, _screenCanvasY) {
         canvasContext$1 = _canvasContext;
         colorStyles$1 = _colorStyles;
-        screenCanvasX = _screenCanvasX;
-        screenCanvasY = _screenCanvasY;
+        screenCanvasX$1 = _screenCanvasX;
+        screenCanvasY$1 = _screenCanvasY;
         for (let x = 0; x < size$1.x; x++) {
             const l = [];
             const tl = [];
@@ -305,7 +305,7 @@
                 const p = textPixels[x][y] === 0 ? pixels[x][y] : textPixels[x][y];
                 if (prevPixels[x][y] !== p) {
                     canvasContext$1.fillStyle = colorStyles$1[p % COLOR_COUNT];
-                    canvasContext$1.fillRect(x + screenCanvasX, y + screenCanvasY, 1, 1);
+                    canvasContext$1.fillRect(x + screenCanvasX$1, y + screenCanvasY$1, 1, 1);
                     prevPixels[x][y] = p;
                 }
             }
@@ -1143,6 +1143,9 @@ l l
     const memory = [];
     let iconPattern;
     let splashScreenTicks = -1;
+    // Set to true to capture the screen.
+    // To capture the screen, gif-capture-canvas library should be loaded in index.html.
+    const isCapturingScreen = false;
     function onLoad() {
         for (let i = 0; i < ADDRESS_COUNT; i++) {
             memory.push(0);
@@ -1162,13 +1165,6 @@ l l
         else {
             setup();
         }
-        // Capturing the canvas with gif-capture-canvas
-        /*(window as any).gcc.setOptions({
-          scale: 3,
-          durationSec: 9,
-          capturingFps: 60,
-          isSmoothingEnabled: false,
-        });*/
         requestAnimationFrame(updateFrame);
     }
     const targetFps = 68;
@@ -1200,8 +1196,7 @@ l l
             update();
             draw();
             updateBuzzer();
-            // Capturing the canvas with gif-capture-canvas
-            //(window as any).gcc.capture(canvas);
+            if (isCapturingScreen) ;
         }
         catch (e) {
             cancelAnimationFrame(requestId);
@@ -1347,6 +1342,8 @@ l l
     }
     const canvasWidth = 48;
     const canvasHeight = 80;
+    const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
+    const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
     let canvas;
     let canvasContext;
     function initCanvas() {
@@ -1383,8 +1380,6 @@ image-rendering: pixelated;
         canvas.style.cssText = canvasCss + crispCss;
         canvasContext.fillStyle = colorStyles[COLOR_CYAN];
         canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
-        const screenCanvasX = Math.floor((canvasWidth - VIDEO_WIDTH) / 2);
-        const screenCanvasY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 2);
         const videoBezelX = Math.floor((canvasWidth - VIDEO_WIDTH) / 4);
         const videoBezelY = Math.floor((canvasHeight / 2 - VIDEO_HEIGHT) / 5);
         canvasContext.fillStyle = colorStyles[COLOR_YELLOW];
@@ -1507,6 +1502,15 @@ image-rendering: pixelated;
                 er.captureStackTrace(this, this.constructor);
             }
         }
+    }
+    // Capture the screen with gif-capture-canvas.
+    let capturingCanvas;
+    let capturingCanvasContext;
+    const capturingCanvasOffset = { x: 0, y: screenCanvasY - 2 };
+    const capturingCanvasSize = { x: canvasWidth, y: VIDEO_HEIGHT + 2 * 2 };
+    function captureScreen() {
+        capturingCanvasContext.drawImage(canvas, capturingCanvasOffset.x, capturingCanvasOffset.y, capturingCanvasSize.x, capturingCanvasSize.y, 0, 0, capturingCanvasSize.x, capturingCanvasSize.y);
+        window.gcc.capture(capturingCanvas);
     }
 
     exports.ADDRESS_BUZZER = ADDRESS_BUZZER;
