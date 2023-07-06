@@ -87,6 +87,8 @@ poke(ADDRESS_BUZZER, 0);
 
 ## Other sample games
 
-- [DASH RACKET](https://abagames.github.io/peekpoke/dashracket/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/dashracket/main.js))
-- [BEEBEES](https://abagames.github.io/peekpoke/beebees/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/beebees/main.js))
-- [LASER LASER](https://abagames.github.io/peekpoke/laserlaser/) ([code](https://github.com/abagames/peekpoke/blob/main/docs/laserlaser/main.js))
+Click on the image to play the game.
+
+<a href="https://abagames.github.io/peekpoke/dashracket/"><img src="https://raw.githubusercontent.com/abagames/peekpoke/main/docs/dashracket/screenshot.gif" width="25%" loading="lazy"></a><a href="https://abagames.github.io/peekpoke/beebees/"><img src="https://raw.githubusercontent.com/abagames/peekpoke/main/docs/beebees/screenshot.gif" width="25%" loading="lazy"></a><a href="https://abagames.github.io/peekpoke/laserlaser/"><img src="https://raw.githubusercontent.com/abagames/peekpoke/main/docs/laserlaser/screenshot.gif" width="25%" loading="lazy"></a>
+
+The source code is located in [the docs directory](https://github.com/abagames/peekpoke/tree/main/docs). See `main.js` in the directory for each game.
