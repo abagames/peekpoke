@@ -279,7 +279,6 @@ function pset(px, py, c) {
     return;
   }
   poke(ADDRESS_VIDEO + x + y * VIDEO_WIDTH, c);
-  poke(ADDRESS_VIDEO + x + y * VIDEO_WIDTH, c);
 }
 
 function pget(x, y) {
