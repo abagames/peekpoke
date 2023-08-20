@@ -170,7 +170,7 @@ function loopInGame() {
     shot.isShot = true;
     beep(60, 3);
   }
-  if (pget(player.x, player.y + 1) === COLOR_PURPLE || player.y > 30) {
+  if (pget(player.x, player.y) === COLOR_PURPLE || player.y > 30) {
     setupGameOver();
   }
   pset(player.x, player.y, COLOR_CYAN);
