@@ -9,6 +9,8 @@ let buzzerTicks;
 let state;
 let score;
 
+enableSplashScreen = true;
+
 function setup() {
   setupTitle();
   ticks = 0;
