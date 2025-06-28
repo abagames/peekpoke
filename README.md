@@ -48,7 +48,7 @@ poke(ADDRESS_VIDEO + x + y * VIDEO_WIDTH, COLOR_RED);
 
 ```JavaScript
 // Draw a 'A' text at (x, y).
-poke(ADDRESS_TEXT + x + y * TEXT_WIDTH, "A",charCodeAt(0));
+poke(ADDRESS_TEXT + x + y * TEXT_WIDTH, "A".charCodeAt(0));
 ```
 
 ### Set text color
